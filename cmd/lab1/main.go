@@ -1,7 +1,11 @@
 package main
 
 import (
+	dfs "expert_systems/pkg/algorithms/DFS"
 	"expert_systems/pkg/models/graph"
+	"expert_systems/pkg/models/stack"
+	"expert_systems/pkg/models/vertex"
+	"log"
 )
 
 func main() {
@@ -15,6 +19,18 @@ func main() {
 		6, 7,
 		6, 8,
 	)
+	if err != nil {
+		log.Panicln(err)
+	}
+
+	stck := stack.NewStack[vertex.Vertex]()
+
+	algDFS := dfs.NewDeepSearch(gr, stck)
+	source := gr.Vertexes[1]
+	target := gr.Vertexes[8]
+	path := algDFS.FindTarget(source, target)
+
+	log.Println(path)
 
 	// alg = AlgorithmDFS(graph)
 	// source = Vertex(1)

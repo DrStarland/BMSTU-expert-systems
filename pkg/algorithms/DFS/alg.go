@@ -32,12 +32,12 @@ func NewDeepSearch(gr graph.Graph, stack StackInterface) DeepSearch {
 	}
 }
 
-func (ds DeepSearch) FindTarget(initial_vertex, target vertex.Vertex) {
+func (ds DeepSearch) FindTarget(initial_vertex, target *vertex.Vertex) {
 
 }
 
 func (ds DeepSearch) FindDescendants(vr *vertex.Vertex) {
-	for _, v := range ds.graph {
+	for _, v := range ds.graph.Edges {
 		if v.Start == vr {
 			return
 		}
