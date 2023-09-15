@@ -7,12 +7,18 @@ import (
 
 // Using Generics to define Type in Stake to Use Structs, too.
 type Stack[T any] struct {
-	lock sync.Mutex // Mutex for Thread safety
-	S    []T        // Slice
+	lock *sync.Mutex // Mutex for Thread safety
+	S    []T         // Slice
 }
 
 func NewStack[T any]() *Stack[T] {
-	return &Stack[T]{lock: sync.Mutex{}, S: []T{}}
+	return &Stack[T]{lock: &sync.Mutex{}, S: []T{}}
+}
+
+func (st Stack[T]) Len() int {
+	st.lock.Lock()
+	defer st.lock.Unlock()
+	return len(st.S)
 }
 
 func (stack *Stack[T]) Push(element T) {
@@ -34,7 +40,7 @@ func (stack *Stack[T]) Pop() (T, error) {
 	return element, nil
 }
 
-func (stack *Stack[T]) Peek() (T, error) {
+func (stack Stack[T]) Peek() (T, error) {
 	stack.lock.Lock()
 	defer stack.lock.Unlock()
 	l := len(stack.S)

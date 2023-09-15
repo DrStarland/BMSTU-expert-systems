@@ -4,14 +4,14 @@ package enums
 type EdgeLabelEnum int
 
 const (
-	Unexplored EdgeLabelEnum = iota
-	Passed
+	Open EdgeLabelEnum = iota
+	Closed
 	Forbidden
 )
 
 var MapEnumStringToEdgeLabel = func() map[string]EdgeLabelEnum {
 	m := make(map[string]EdgeLabelEnum)
-	for i := Unexplored; i <= Forbidden; i++ {
+	for i := Open; i <= Forbidden; i++ {
 		m[i.String()] = i
 	}
 	return m

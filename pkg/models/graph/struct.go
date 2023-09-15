@@ -39,7 +39,7 @@ func NewGraph(vertexNumbers ...int) (Graph, error) {
 		gr.Edges = append(gr.Edges, edge.Edge{
 			Start: appendAndGet(&gr.Vertexes, vertexNumbers[i]),
 			End:   appendAndGet(&gr.Vertexes, vertexNumbers[i+1]),
-			Label: enums.Unexplored,
+			Label: enums.Open,
 		})
 	}
 

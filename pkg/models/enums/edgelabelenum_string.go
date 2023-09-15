@@ -8,14 +8,14 @@ func _() {
 	// An "invalid array index" compiler error signifies that the constant values have changed.
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
-	_ = x[Unexplored-0]
-	_ = x[Passed-1]
+	_ = x[Open-0]
+	_ = x[Closed-1]
 	_ = x[Forbidden-2]
 }
 
-const _EdgeLabelEnum_name = "UnexploredPassedForbidden"
+const _EdgeLabelEnum_name = "OpenClosedForbidden"
 
-var _EdgeLabelEnum_index = [...]uint8{0, 10, 16, 25}
+var _EdgeLabelEnum_index = [...]uint8{0, 4, 10, 19}
 
 func (i EdgeLabelEnum) String() string {
 	if i < 0 || i >= EdgeLabelEnum(len(_EdgeLabelEnum_index)-1) {
