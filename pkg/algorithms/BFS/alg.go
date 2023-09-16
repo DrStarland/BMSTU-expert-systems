@@ -39,7 +39,10 @@ func NewWideSearch(gr graph.Graph, queue QueueInterface, stack dfs.StackInterfac
 
 func (bs *WideSearch) FindTarget(initial_vertex, target *vertex.Vertex) ([]*vertex.Vertex, error) {
 	bs.target = target
-	path_hidden := make([]*vertex.Vertex, 0)
+
+	path_hidden := map[int][]*vertex.Vertex{
+		//target.Number: []*vertex.Vertex{target},
+	} //  make([]*vertex.Vertex, 0)
 
 	// path[0] = initial_vertex
 	bs.queue.Push(initial_vertex)
@@ -50,14 +53,15 @@ func (bs *WideSearch) FindTarget(initial_vertex, target *vertex.Vertex) ([]*vert
 		}
 
 		v, _ := bs.queue.Pop()
-		decisionFlag = bs.findDescendants(v, &path_hidden)
+		decisionFlag = bs.findDescendants(v, path_hidden)
 	}
 
-	path2 := bs.unpackQueue()
+	path2 := path_hidden[bs.target.Number]
+
 	return path2, nil
 }
 
-func (bs *WideSearch) findDescendants(source *vertex.Vertex, path *[]*vertex.Vertex) bool {
+func (bs *WideSearch) findDescendants(source *vertex.Vertex, path map[int][]*vertex.Vertex) bool {
 	old_n := bs.queue.Len()
 	for i, e := range bs.Graph.Edges {
 		if e.Start == source && e.Label != enums.Closed {
@@ -66,8 +70,15 @@ func (bs *WideSearch) findDescendants(source *vertex.Vertex, path *[]*vertex.Ver
 				continue
 			}
 			// наилучшая ветвь
+			if _, ok := path[e.End.Number]; !ok {
+				temp := make([]*vertex.Vertex, len(path[e.Start.Number]))
+				copy(temp, path[e.Start.Number])
+				path[e.End.Number] = append(temp, e.Start)
+			}
+
 			bs.queue.Push(e.End)
 			if e.End == bs.target {
+				path[e.End.Number] = append(path[e.End.Number], e.End)
 				return true
 			}
 		}
@@ -76,14 +87,4 @@ func (bs *WideSearch) findDescendants(source *vertex.Vertex, path *[]*vertex.Ver
 		bs.forbiddenMap[source.Number] = source
 	}
 	return false
-}
-
-func (bs WideSearch) unpackQueue() []*vertex.Vertex {
-	n := bs.queue.Len()
-	path := make([]*vertex.Vertex, n)
-	for i := 0; i < n; i++ {
-		v, _ := bs.queue.Pop()
-		path[n-i-1] = v
-	}
-	return path
 }

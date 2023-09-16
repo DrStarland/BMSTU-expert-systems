@@ -61,7 +61,6 @@ func main() {
 	for _, v := range path {
 		log.Println(v.Number)
 	}
-	log.Println(algBFS.Graph)
 
 	// alg = AlgorithmDFS(graph)
 	// source = Vertex(1)
