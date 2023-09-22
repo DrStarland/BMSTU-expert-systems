@@ -11,7 +11,6 @@ import (
 )
 
 func main() {
-
 	gr, err := graph.NewGraph(
 		0, 1,
 		1, 4,
@@ -24,14 +23,6 @@ func main() {
 		9, 8,
 		4, 8,
 	)
-	// 	1, 2,
-	// 	2, 3,
-	// 	3, 4,
-	// 	3, 6,
-	// 	5, 6,
-	// 	6, 7,
-	// 	6, 8,
-	// )
 	if err != nil {
 		log.Panicln(err)
 	}
@@ -39,7 +30,7 @@ func main() {
 	stck := stack.NewStack[*vertex.Vertex]()
 	log.Println("Поиск в глубину:")
 	algDFS := dfs.NewDeepSearch(gr, stck)
-	source := gr.Vertexes[7]
+	source := gr.Vertexes[1]
 	target := gr.Vertexes[8]
 	path, err := algDFS.FindTarget(source, target)
 
@@ -51,10 +42,9 @@ func main() {
 
 	log.Println("Поиск в ширину:")
 	qu := queue.NewQueue[*vertex.Vertex]()
-	stck2 := stack.NewStack[*vertex.Vertex]()
-	algBFS := bfs.NewWideSearch(gr, qu, stck2)
-	source = gr.Vertexes[5]
-	target = gr.Vertexes[6]
+	algBFS := bfs.NewWideSearch(gr, qu)
+	source = gr.Vertexes[1]
+	target = gr.Vertexes[8]
 	path, err = algBFS.FindTarget(source, target)
 
 	log.Println(path, err)

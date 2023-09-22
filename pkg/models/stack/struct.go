@@ -12,7 +12,10 @@ type Stack[T any] struct {
 }
 
 func NewStack[T any]() *Stack[T] {
-	return &Stack[T]{lock: &sync.Mutex{}, S: []T{}}
+	return &Stack[T]{
+		lock: &sync.Mutex{},
+		S:    []T{},
+	}
 }
 
 func (st Stack[T]) Len() int {

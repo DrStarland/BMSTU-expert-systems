@@ -12,7 +12,10 @@ type Queue[T any] struct {
 }
 
 func NewQueue[T any]() *Queue[T] {
-	return &Queue[T]{lock: &sync.Mutex{}, S: []T{}}
+	return &Queue[T]{
+		lock: &sync.Mutex{},
+		S:    []T{},
+	}
 }
 
 func (st Queue[T]) Len() int {

@@ -36,15 +36,13 @@ func NewDeepSearch(gr graph.Graph, stack StackInterface) DeepSearch {
 
 func (ds *DeepSearch) FindTarget(initial_vertex, target *vertex.Vertex) ([]*vertex.Vertex, error) {
 	ds.target = target
-
-	// path[0] = initial_vertex
 	ds.stack.Push(initial_vertex)
+	// флаг, что решение найдено
 	decisionFlag := false
 	for !decisionFlag {
 		if ds.stack.Len() == 0 {
 			return []*vertex.Vertex{}, fmt.Errorf("decision was not found")
 		}
-
 		v, _ := ds.stack.Peek()
 		decisionFlag = ds.findDescendants(v)
 	}
@@ -57,6 +55,7 @@ func (ds *DeepSearch) findDescendants(source *vertex.Vertex) bool {
 	old_n := ds.stack.Len()
 	for i, e := range ds.graph.Edges {
 		if e.Start == source && e.Label != enums.Closed {
+			// если ребро ведёт в запрещённую вершину, помечаем его как закрытое
 			if _, ok := ds.forbiddenMap[e.End.Number]; ok {
 				ds.graph.Edges[i].Label = enums.Closed
 				continue
@@ -70,6 +69,8 @@ func (ds *DeepSearch) findDescendants(source *vertex.Vertex) bool {
 			}
 		}
 	}
+	// если ни одной вершины не удалось добавить в стек, значит,
+	// у этой вершины нет больше потомков
 	if old_n == ds.stack.Len() {
 		v, _ := ds.stack.Pop()
 		ds.forbiddenMap[v.Number] = v

@@ -8,7 +8,9 @@ import (
 )
 
 type Graph struct {
-	Edges    []edge.Edge
+	// основа графа -- список рёбер
+	Edges []edge.Edge
+	// карта всех вершин по номерам
 	Vertexes map[int]*vertex.Vertex
 }
 
