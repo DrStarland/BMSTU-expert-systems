@@ -39,7 +39,7 @@ func main() {
 	stck := stack.NewStack[*vertex.Vertex]()
 	log.Println("Поиск в глубину:")
 	algDFS := dfs.NewDeepSearch(gr, stck)
-	source := gr.Vertexes[0]
+	source := gr.Vertexes[7]
 	target := gr.Vertexes[8]
 	path, err := algDFS.FindTarget(source, target)
 
@@ -53,32 +53,12 @@ func main() {
 	qu := queue.NewQueue[*vertex.Vertex]()
 	stck2 := stack.NewStack[*vertex.Vertex]()
 	algBFS := bfs.NewWideSearch(gr, qu, stck2)
-	source = gr.Vertexes[0]
-	target = gr.Vertexes[8]
+	source = gr.Vertexes[5]
+	target = gr.Vertexes[6]
 	path, err = algBFS.FindTarget(source, target)
 
 	log.Println(path, err)
 	for _, v := range path {
 		log.Println(v.Number)
 	}
-
-	// alg = AlgorithmDFS(graph)
-	// source = Vertex(1)
-	// target = Vertex(8)
-
-	// path = alg.search(source, target)
-
-	// utils.print_path(path)
-	// utils.show_graph(graph, path, node_color_map={
-	// 	source.number: 'red',
-	// 	target.number: 'red',
-	// })
-
-	// stck := stack.NewStack[string]()
-	// stck.Push("1")
-	// stck2 := stack.NewStack[[]int]()
-	// stck2.Push([]int{1, 2, 3, 4, 5})
-	// element, _ := stck2.Peek()
-
-	// log.Println(element)
 }
