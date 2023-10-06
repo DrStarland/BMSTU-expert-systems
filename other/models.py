@@ -2,16 +2,16 @@ import enum
 import typing
 import dataclasses
 
-class VertexState(enum.Enum):
+class NodeState(enum.Enum):
     BLACK = 1
     GRAY  = 2
     WHITE = 3
 
 @dataclasses.dataclass(unsafe_hash=True)
-class Vertex:
+class Node:
     """Вершина"""
     number: int
-    state: VertexState = dataclasses.field(default=VertexState.WHITE, compare=False)
+    state: NodeState = dataclasses.field(default=NodeState.WHITE, compare=False)
 
 class EdgeState(enum.Enum):
     TRAVERSED = 1
@@ -21,8 +21,8 @@ class EdgeState(enum.Enum):
 @dataclasses.dataclass
 class Edge:
     """Ребро"""
-    start: Vertex
-    end: Vertex
+    start: Node
+    end: Node
     label: EdgeState = EdgeState.FREE
 
 class Graph:
@@ -34,7 +34,7 @@ class Graph:
         """Список рёбер"""
         return self._edges
 
-    def vertexes(self) -> typing.List[Vertex]:
+    def vertexes(self) -> typing.List[Node]:
         """Список вершин"""
         set_vertex = set()
         for edge in self._edges:

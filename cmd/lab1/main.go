@@ -4,9 +4,9 @@ import (
 	bfs "expert_systems/pkg/algorithms/BFS"
 	dfs "expert_systems/pkg/algorithms/DFS"
 	"expert_systems/pkg/models/graph"
+	"expert_systems/pkg/models/node"
 	"expert_systems/pkg/models/queue"
 	"expert_systems/pkg/models/stack"
-	"expert_systems/pkg/models/vertex"
 	"log"
 )
 
@@ -27,11 +27,11 @@ func main() {
 		log.Panicln(err)
 	}
 
-	stck := stack.NewStack[*vertex.Vertex]()
+	stck := stack.NewStack[*node.Node]()
 	log.Println("Поиск в глубину:")
 	algDFS := dfs.NewDeepSearch(gr, stck)
-	source := gr.Vertexes[1]
-	target := gr.Vertexes[8]
+	source := gr.Nodes[0]
+	target := gr.Nodes[8]
 	path, err := algDFS.FindTarget(source, target)
 
 	log.Println(path, err)
@@ -41,10 +41,10 @@ func main() {
 	}
 
 	log.Println("Поиск в ширину:")
-	qu := queue.NewQueue[*vertex.Vertex]()
+	qu := queue.NewQueue[*node.Node]()
 	algBFS := bfs.NewWideSearch(gr, qu)
-	source = gr.Vertexes[1]
-	target = gr.Vertexes[8]
+	source = gr.Nodes[1]
+	target = gr.Nodes[8]
 	path, err = algBFS.FindTarget(source, target)
 
 	log.Println(path, err)

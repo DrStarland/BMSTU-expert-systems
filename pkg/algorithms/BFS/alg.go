@@ -3,28 +3,28 @@ package bfs
 import (
 	"expert_systems/pkg/models/enums"
 	"expert_systems/pkg/models/graph"
-	"expert_systems/pkg/models/vertex"
+	"expert_systems/pkg/models/node"
 	"fmt"
 )
 
 type QueueInterface interface {
 	Len() int
-	Push(*vertex.Vertex)
-	Pop() (*vertex.Vertex, error)
-	Peek() (*vertex.Vertex, error)
+	Push(*node.Node)
+	Pop() (*node.Node, error)
+	Peek() (*node.Node, error)
 }
 
 type WideSearch struct {
 	// для удобства храним граф в структуре
 	Graph graph.Graph
 	// и цель тоже
-	target *vertex.Vertex
+	target *node.Node
 	// рабочая память алгоритма
 	queue QueueInterface
 	// вспомогательная переменная для хранения путей к каждой вершине
-	path_hidden map[int][]*vertex.Vertex
+	path_hidden map[int][]*node.Node
 	// список запрещённых вершин
-	forbiddenMap map[int]*vertex.Vertex
+	forbiddenMap map[int]*node.Node
 }
 
 func NewWideSearch(gr graph.Graph, queue QueueInterface) WideSearch {
@@ -32,12 +32,12 @@ func NewWideSearch(gr graph.Graph, queue QueueInterface) WideSearch {
 		Graph:        gr,
 		target:       nil,
 		queue:        queue,
-		path_hidden:  map[int][]*vertex.Vertex{},
-		forbiddenMap: map[int]*vertex.Vertex{},
+		path_hidden:  map[int][]*node.Node{},
+		forbiddenMap: map[int]*node.Node{},
 	}
 }
 
-func (bs *WideSearch) FindTarget(initial_vertex, target *vertex.Vertex) ([]*vertex.Vertex, error) {
+func (bs *WideSearch) FindTarget(initial_vertex, target *node.Node) ([]*node.Node, error) {
 	bs.target = target
 
 	bs.queue.Push(initial_vertex)
@@ -45,7 +45,7 @@ func (bs *WideSearch) FindTarget(initial_vertex, target *vertex.Vertex) ([]*vert
 	decisionFlag := false
 	for !decisionFlag {
 		if bs.queue.Len() == 0 {
-			return []*vertex.Vertex{}, fmt.Errorf("decision was not found")
+			return []*node.Node{}, fmt.Errorf("decision was not found")
 		}
 
 		v, _ := bs.queue.Pop()
@@ -55,7 +55,7 @@ func (bs *WideSearch) FindTarget(initial_vertex, target *vertex.Vertex) ([]*vert
 	return bs.path_hidden[bs.target.Number], nil
 }
 
-func (bs *WideSearch) findDescendants(source *vertex.Vertex) bool {
+func (bs *WideSearch) findDescendants(source *node.Node) bool {
 	old_n := bs.queue.Len()
 	for i, e := range bs.Graph.Edges {
 		if e.Start == source && e.Label != enums.Closed {
@@ -64,11 +64,11 @@ func (bs *WideSearch) findDescendants(source *vertex.Vertex) bool {
 				bs.Graph.Edges[i].Label = enums.Closed
 				continue
 			}
-			// наилучшая ветвь
+
 			if _, ok := bs.path_hidden[e.End.Number]; !ok {
 				// копируем путь до текущей вершины и добавляем текущую -- это будет
 				// путём до следующей вершины этого ребра
-				temp := make([]*vertex.Vertex, len(bs.path_hidden[e.Start.Number]))
+				temp := make([]*node.Node, len(bs.path_hidden[e.Start.Number]))
 				copy(temp, bs.path_hidden[e.Start.Number])
 				bs.path_hidden[e.End.Number] = append(temp, e.Start)
 			}

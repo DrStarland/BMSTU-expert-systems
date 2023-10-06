@@ -2,11 +2,11 @@ package edge
 
 import (
 	"expert_systems/pkg/models/enums"
-	"expert_systems/pkg/models/vertex"
+	"expert_systems/pkg/models/node"
 )
 
 type Edge struct {
-	Start *vertex.Vertex
-	End   *vertex.Vertex
+	Start *node.Node
+	End   *node.Node
 	Label enums.EdgeLabelEnum
 }

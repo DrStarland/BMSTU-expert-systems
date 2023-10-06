@@ -1,26 +1,27 @@
-package graph
+package and_or_tree
 
 import (
 	"expert_systems/pkg/models/edge"
 	"expert_systems/pkg/models/enums"
 	"expert_systems/pkg/models/node"
+	"expert_systems/pkg/models/rule"
 	"fmt"
 )
 
-type Graph struct {
+type Tree struct {
 	// основа графа -- список рёбер
-	Edges []edge.Edge
+	Rules []rule.Rule
 	// карта всех вершин по номерам
 	Nodes map[int]*node.Node
 }
 
 type Path struct {
 	// само содержание пути
-	Data []*node.Node
+	Data []interface{}
 }
 
 // введите структуру графа как список попарных номеров вершин, являющихся началом и концом ребра
-// например, NewGraph(1, 2, 2, 3, 3, 1)
+// например, NewTree(1, 2, 2, 3, 3, 1)
 func appendAndGet(mv *map[int]*node.Node, number int) *node.Node {
 	v, ok := (*mv)[number]
 	if ok {
@@ -31,14 +32,14 @@ func appendAndGet(mv *map[int]*node.Node, number int) *node.Node {
 	return v
 }
 
-func NewGraph(vertexNumbers ...int) (Graph, error) {
+func NewTree(vertexNumbers ...int) (Tree, error) {
 	n := len(vertexNumbers)
 	if n%2 != 0 {
-		return Graph{}, fmt.Errorf("incorrect graph: number of vertexex %d is odd", n)
+		return Tree{}, fmt.Errorf("incorrect graph: number of vertexex %d is odd", n)
 	}
 
 	// число рёбер в 2 раза меньше числа пар вершин
-	gr := Graph{
+	gr := Tree{
 		Edges: make([]edge.Edge, 0, n/2),
 		Nodes: make(map[int]*node.Node),
 	}

@@ -12,12 +12,12 @@ class AlgorithmDFS:
 
     def search(
         self,
-        source: models.Vertex,
-        target: models.Vertex
-    ) ->  Optional[List[models.Vertex]]:
-        stack: Deque[models.Vertex] = deque()
-        open_vertexes: List[models.Vertex] = self._graph.vertexes()
-        close_vertexes: List[models.Vertex] = list()
+        source: models.Node,
+        target: models.Node
+    ) ->  Optional[List[models.Node]]:
+        stack: Deque[models.Node] = deque()
+        open_vertexes: List[models.Node] = self._graph.vertexes()
+        close_vertexes: List[models.Node] = list()
         
         stack.append(source)
         while stack:
@@ -49,21 +49,21 @@ class AlgorithmDFS:
 from models import *
 
 graph = Graph(
-    Edge(Vertex(1), Vertex(2)),
-    Edge(Vertex(2), Vertex(3)),
-    Edge(Vertex(3), Vertex(4)),
+    Edge(Node(1), Node(2)),
+    Edge(Node(2), Node(3)),
+    Edge(Node(3), Node(4)),
 
-    Edge(Vertex(3), Vertex(6)),
-    #Edge(Vertex(6), Vertex(3)),
+    Edge(Node(3), Node(6)),
+    #Edge(Node(6), Node(3)),
 
-    Edge(Vertex(5), Vertex(6)),
-    Edge(Vertex(6), Vertex(7)),
-    Edge(Vertex(6), Vertex(8)),
+    Edge(Node(5), Node(6)),
+    Edge(Node(6), Node(7)),
+    Edge(Node(6), Node(8)),
 )
 
 alg = AlgorithmDFS(graph)
-source = Vertex(1)
-target = Vertex(8)
+source = Node(1)
+target = Node(8)
 
 path = alg.search(source, target)
 

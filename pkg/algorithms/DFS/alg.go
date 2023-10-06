@@ -3,26 +3,26 @@ package dfs
 import (
 	"expert_systems/pkg/models/enums"
 	"expert_systems/pkg/models/graph"
-	"expert_systems/pkg/models/vertex"
+	"expert_systems/pkg/models/node"
 	"fmt"
 )
 
 type StackInterface interface {
 	Len() int
-	Push(*vertex.Vertex)
-	Pop() (*vertex.Vertex, error)
-	Peek() (*vertex.Vertex, error)
+	Push(*node.Node)
+	Pop() (*node.Node, error)
+	Peek() (*node.Node, error)
 }
 
 type DeepSearch struct {
 	// для удобства храним граф в структуре
 	graph graph.Graph
 	// и цель тоже
-	target *vertex.Vertex
+	target *node.Node
 	// рабочая память алгоритма
 	stack StackInterface
 	// список запрещённых вершин
-	forbiddenMap map[int]*vertex.Vertex
+	forbiddenMap map[int]*node.Node
 }
 
 func NewDeepSearch(gr graph.Graph, stack StackInterface) DeepSearch {
@@ -30,18 +30,18 @@ func NewDeepSearch(gr graph.Graph, stack StackInterface) DeepSearch {
 		graph:        gr,
 		target:       nil,
 		stack:        stack,
-		forbiddenMap: map[int]*vertex.Vertex{},
+		forbiddenMap: map[int]*node.Node{},
 	}
 }
 
-func (ds *DeepSearch) FindTarget(initial_vertex, target *vertex.Vertex) ([]*vertex.Vertex, error) {
+func (ds *DeepSearch) FindTarget(initial_vertex, target *node.Node) ([]*node.Node, error) {
 	ds.target = target
 	ds.stack.Push(initial_vertex)
 	// флаг, что решение найдено
 	decisionFlag := false
 	for !decisionFlag {
 		if ds.stack.Len() == 0 {
-			return []*vertex.Vertex{}, fmt.Errorf("decision was not found")
+			return []*node.Node{}, fmt.Errorf("decision was not found")
 		}
 		v, _ := ds.stack.Peek()
 		decisionFlag = ds.findDescendants(v)
@@ -51,7 +51,7 @@ func (ds *DeepSearch) FindTarget(initial_vertex, target *vertex.Vertex) ([]*vert
 	return path, nil
 }
 
-func (ds *DeepSearch) findDescendants(source *vertex.Vertex) bool {
+func (ds *DeepSearch) findDescendants(source *node.Node) bool {
 	old_n := ds.stack.Len()
 	for i, e := range ds.graph.Edges {
 		if e.Start == source && e.Label != enums.Closed {
@@ -78,9 +78,9 @@ func (ds *DeepSearch) findDescendants(source *vertex.Vertex) bool {
 	return false
 }
 
-func (ds DeepSearch) unpackStack() []*vertex.Vertex {
+func (ds DeepSearch) unpackStack() []*node.Node {
 	n := ds.stack.Len()
-	path := make([]*vertex.Vertex, n)
+	path := make([]*node.Node, n)
 	for i := 0; i < n; i++ {
 		v, _ := ds.stack.Pop()
 		path[n-i-1] = v

@@ -9,7 +9,7 @@ def _convert_edges(edges: List[models.Edge]) -> List[tuple]:
         for edge in edges
     ]
 
-def _convert_path(path: List[models.Vertex]) -> List[tuple]:
+def _convert_path(path: List[models.Node]) -> List[tuple]:
     if not path:
         return
 
@@ -20,21 +20,21 @@ def _convert_path(path: List[models.Vertex]) -> List[tuple]:
         prev = vert
     return edges
 
-def print_path(path: Optional[List[models.Vertex]]):
+def print_path(path: Optional[List[models.Node]]):
     if not path:
         print("no path")
     else:
         print(" -> ".join(map(lambda v: str(v.number), path)))
 
 NODE_COLOR_MAP = {
-    models.VertexState.WHITE: 'white',
-    models.VertexState.GRAY: 'gray',
-    models.VertexState.BLACK: 'blue',
+    models.NodeState.WHITE: 'white',
+    models.NodeState.GRAY: 'gray',
+    models.NodeState.BLACK: 'blue',
 }
 
 def show_graph(
         graph: models.Graph,
-        path: Optional[List[models.Vertex]] = None,
+        path: Optional[List[models.Node]] = None,
         node_color_map: Dict[int, str] = None,
     ) -> None:
     node_options = {"edgecolors": "tab:gray", "node_size": 500, "alpha": 0.9}
@@ -82,11 +82,11 @@ def show_graph(
 if __name__ == '__main__':
     from models import *
     graph = Graph(
-        Edge(Vertex(1), Vertex(2)),
-        Edge(Vertex(1), Vertex(4)),
-        Edge(Vertex(2), Vertex(3)),
-        Edge(Vertex(3), Vertex(4)),
+        Edge(Node(1), Node(2)),
+        Edge(Node(1), Node(4)),
+        Edge(Node(2), Node(3)),
+        Edge(Node(3), Node(4)),
     )
-    path = [Vertex(1), Vertex(2), Vertex(3)]
+    path = [Node(1), Node(2), Node(3)]
     print_path(path)
     show_graph(graph, path)
