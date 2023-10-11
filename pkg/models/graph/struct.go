@@ -31,10 +31,10 @@ func appendAndGet(mv *map[int]*node.Node, number int) *node.Node {
 	return v
 }
 
-func NewGraph(vertexNumbers ...int) (Graph, error) {
-	n := len(vertexNumbers)
+func NewGraph(nodeNumbers ...int) (Graph, error) {
+	n := len(nodeNumbers)
 	if n%2 != 0 {
-		return Graph{}, fmt.Errorf("incorrect graph: number of vertexex %d is odd", n)
+		return Graph{}, fmt.Errorf("incorrect graph: number of nodeex %d is odd", n)
 	}
 
 	// число рёбер в 2 раза меньше числа пар вершин
@@ -44,8 +44,8 @@ func NewGraph(vertexNumbers ...int) (Graph, error) {
 	}
 	for i := 0; i < n; i += 2 {
 		gr.Edges = append(gr.Edges, edge.Edge{
-			Start: appendAndGet(&gr.Nodes, vertexNumbers[i]),
-			End:   appendAndGet(&gr.Nodes, vertexNumbers[i+1]),
+			Start: appendAndGet(&gr.Nodes, nodeNumbers[i]),
+			End:   appendAndGet(&gr.Nodes, nodeNumbers[i+1]),
 			Label: enums.Open,
 		})
 	}

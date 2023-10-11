@@ -37,10 +37,10 @@ func NewWideSearch(gr graph.Graph, queue QueueInterface) WideSearch {
 	}
 }
 
-func (bs *WideSearch) FindTarget(initial_vertex, target *node.Node) ([]*node.Node, error) {
+func (bs *WideSearch) FindTarget(initial_node, target *node.Node) ([]*node.Node, error) {
 	bs.target = target
 
-	bs.queue.Push(initial_vertex)
+	bs.queue.Push(initial_node)
 	// флаг, что решение найдено
 	decisionFlag := false
 	for !decisionFlag {

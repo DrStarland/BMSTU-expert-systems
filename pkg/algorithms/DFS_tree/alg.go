@@ -1,8 +1,8 @@
-package dfs
+package dfs_tree
 
 import (
+	"expert_systems/pkg/models/and_or_tree"
 	"expert_systems/pkg/models/enums"
-	"expert_systems/pkg/models/graph"
 	"expert_systems/pkg/models/node"
 	"fmt"
 )
@@ -16,7 +16,7 @@ type StackInterface interface {
 
 type DeepSearch struct {
 	// для удобства храним граф в структуре
-	graph graph.Graph
+	knowledgebase and_or_tree.Tree
 	// и цель тоже
 	target *node.Node
 	// рабочая память алгоритма
@@ -25,7 +25,7 @@ type DeepSearch struct {
 	forbiddenMap map[int]*node.Node
 }
 
-func NewDeepSearch(gr graph.Graph, stack StackInterface) DeepSearch {
+func NewSearch(tr and_or_tree.Tree, stack StackInterface) DeepSearch {
 	return DeepSearch{
 		graph:        gr,
 		target:       nil,

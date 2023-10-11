@@ -45,7 +45,7 @@ def show_graph(
 
     if not node_color_map:
         node_color_map = {}
-    for vert in graph.vertexes():
+    for vert in graph.nodees():
         if vert.number not in node_color_map:
             node_color_map[vert.number] = NODE_COLOR_MAP[vert.state]
 

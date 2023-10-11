@@ -10,8 +10,8 @@ type Rule struct {
 	Result *node.Node
 }
 
-func NewRule(number int, result *node.Node, inputs ...*node.Node) *Rule {
-	return &Rule{
+func NewRule(number int, result *node.Node, inputs ...*node.Node) Rule {
+	return Rule{
 		Number:  number,
 		Feature: 0,
 

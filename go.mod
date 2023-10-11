@@ -3,6 +3,7 @@ module expert_systems
 go 1.20
 
 require (
+	github.com/pkg/errors v0.9.1 // indirect
 	golang.org/x/mod v0.4.2 // indirect
 	golang.org/x/sys v0.0.0-20210510120138-977fb7262007 // indirect
 	golang.org/x/tools v0.1.5 // indirect

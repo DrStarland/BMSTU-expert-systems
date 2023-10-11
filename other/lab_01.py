@@ -16,8 +16,8 @@ class AlgorithmDFS:
         target: models.Node
     ) ->  Optional[List[models.Node]]:
         stack: Deque[models.Node] = deque()
-        open_vertexes: List[models.Node] = self._graph.vertexes()
-        close_vertexes: List[models.Node] = list()
+        open_nodees: List[models.Node] = self._graph.nodees()
+        close_nodees: List[models.Node] = list()
         
         stack.append(source)
         while stack:
@@ -31,8 +31,8 @@ class AlgorithmDFS:
                     return list(stack)
             else:
                 stack.pop()
-                open_vertexes.remove(source)
-                close_vertexes.append(source)
+                open_nodees.remove(source)
+                close_nodees.append(source)
 
         return None
 

@@ -34,11 +34,11 @@ class Graph:
         """Список рёбер"""
         return self._edges
 
-    def vertexes(self) -> typing.List[Node]:
+    def nodees(self) -> typing.List[Node]:
         """Список вершин"""
-        set_vertex = set()
+        set_node = set()
         for edge in self._edges:
-            set_vertex.add(edge.start)
-            set_vertex.add(edge.end)
-        return list(set_vertex)
+            set_node.add(edge.start)
+            set_node.add(edge.end)
+        return list(set_node)
 
