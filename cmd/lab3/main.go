@@ -1,6 +1,7 @@
 package main
 
 import (
+	dfs_tree "expert_systems/pkg/algorithms/DFS_tree"
 	"expert_systems/pkg/models/and_or_tree"
 	"log"
 )
@@ -72,7 +73,12 @@ func main() {
 		log.Panicln(err)
 	}
 
-	log.Println(tr)
+	// log.Println(tr)
+
+	alg := dfs_tree.NewSearch(tr)
+	path, err := alg.FindTarget(tr.Nodes[23],
+		tr.Nodes[1], tr.Nodes[2], tr.Nodes[4], tr.Nodes[5], tr.Nodes[6])
+	log.Println(path)
 
 	// stck := stack.NewStack[*node.Node]()
 	// log.Println("Поиск в глубину:")
