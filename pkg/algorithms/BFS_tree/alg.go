@@ -44,6 +44,9 @@ func NewSearch(tr and_or_tree.Tree) BoldSearch {
 	}
 }
 
+/*
+Инициализация рабочей памяти алгоритма перед выполнением задачи поиска
+*/
 func (ds *BoldSearch) init(initial_nodes []*node.Node, target *node.Node) {
 	// назначаем целевую вершину
 	ds.target = target
@@ -63,6 +66,9 @@ func (ds *BoldSearch) init(initial_nodes []*node.Node, target *node.Node) {
 	return
 }
 
+/*
+Основная функция -- поиск целевой вершины
+*/
 func (ds *BoldSearch) FindTarget(target *node.Node, inputs ...*node.Node) ([]*node.Node, error) {
 	// инициализируем "рабочую память"
 	ds.init(inputs, target)
@@ -105,6 +111,10 @@ func (ds *BoldSearch) checkRuleProvability(r rule.Rule) bool {
 	return flag == 0
 }
 
+/*
+Поиск первого правила, которое можно доказать, и соответствующие этому операции
+над рабочей памятью в случае обнаружения
+*/
 func (ds *BoldSearch) findRules() (bool, bool) {
 	// просматриваем базу открытых правил
 	for i, r := range ds.openRules {
@@ -116,14 +126,9 @@ func (ds *BoldSearch) findRules() (bool, bool) {
 			ds.closedRulesOrder = append(ds.closedRulesOrder, r.Number)
 			ds.closedNodes[r.Result.Number] = r.Result
 			ds.closedNodesOrder = append(ds.closedNodesOrder, r.Result.Number)
-			// удаляем их из списков открытых
+			// удаляем их из списков открытых правил и вершин
 			deleteFromArray(&ds.openRules, i)
-			for j, nod := range ds.openNodes {
-				if nod == r.Result {
-					deleteFromArray(&ds.openNodes, j)
-					break
-				}
-			}
+			ds.deleteResultNodeFromOpenNodes(r.Result)
 			// если была найдена целевая вершина -- сообщаем о нахождении решения,
 			// иначе выходим из функции и продолжаем поиск
 			if r.Result == ds.target {
@@ -133,6 +138,20 @@ func (ds *BoldSearch) findRules() (bool, bool) {
 		}
 	}
 	return false, false
+}
+
+/*
+Функция выполняет поиск позиции целевой вершины в списке (массиве)
+открытых вершин и удаляет её
+*/
+func (ds *BoldSearch) deleteResultNodeFromOpenNodes(target *node.Node) {
+	for j, nod := range ds.openNodes {
+		// ищем позицию выходной вершины в списке открытых вершин
+		if nod == target {
+			deleteFromArray(&ds.openNodes, j)
+			break
+		}
+	}
 }
 
 func deleteFromArray(arr interface{}, i int) {
