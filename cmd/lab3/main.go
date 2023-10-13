@@ -77,7 +77,9 @@ func main() {
 
 	alg := dfs_tree.NewSearch(tr)
 	path, err := alg.FindTarget(tr.Nodes[23],
-		tr.Nodes[1], tr.Nodes[2], tr.Nodes[4], tr.Nodes[5], tr.Nodes[6])
+		// tr.Nodes[1], tr.Nodes[2], tr.Nodes[4], tr.Nodes[5], tr.Nodes[6], tr.Nodes[15], tr.Nodes[16])
+		tr.Nodes[13], tr.Nodes[5], tr.Nodes[6], tr.Nodes[7], tr.Nodes[8], tr.Nodes[9], tr.Nodes[10],
+	)
 	log.Println(path)
 
 	// stck := stack.NewStack[*node.Node]()
