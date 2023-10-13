@@ -1,7 +1,7 @@
 package main
 
 import (
-	dfs_tree "expert_systems/pkg/algorithms/DFS_tree"
+	bfs_tree "expert_systems/pkg/algorithms/BFS_tree"
 	"expert_systems/pkg/models/and_or_tree"
 	"log"
 )
@@ -73,37 +73,11 @@ func main() {
 		log.Panicln(err)
 	}
 
-	// log.Println(tr)
-
-	alg := dfs_tree.NewSearch(tr)
+	alg := bfs_tree.NewSearch(tr)
 	path, err := alg.FindTarget(tr.Nodes[23],
-		// tr.Nodes[1], tr.Nodes[2], tr.Nodes[4], tr.Nodes[5], tr.Nodes[6], tr.Nodes[15], tr.Nodes[16])
-		tr.Nodes[13], tr.Nodes[5], tr.Nodes[6], tr.Nodes[7], tr.Nodes[8], tr.Nodes[9], tr.Nodes[10],
+		tr.Nodes[1], tr.Nodes[2], tr.Nodes[4],
+		// tr.Nodes[1], tr.Nodes[2], tr.Nodes[4], tr.Nodes[5], tr.Nodes[6], tr.Nodes[15], tr.Nodes[16],
+		// tr.Nodes[13], tr.Nodes[5], tr.Nodes[6], tr.Nodes[7], tr.Nodes[8], tr.Nodes[9], tr.Nodes[10],
 	)
 	log.Println(path)
-
-	// stck := stack.NewStack[*node.Node]()
-	// log.Println("Поиск в глубину:")
-	// algDFS := dfs.NewDeepSearch(gr, stck)
-	// source := gr.Nodes[0]
-	// target := gr.Nodes[8]
-	// path, err := algDFS.FindTarget(source, target)
-
-	// log.Println(path, err)
-
-	// for _, v := range path {
-	// 	log.Println(v.Number)
-	// }
-
-	// log.Println("Поиск в ширину:")
-	// qu := queue.NewQueue[*node.Node]()
-	// algBFS := bfs.NewWideSearch(gr, qu)
-	// source = gr.Nodes[1]
-	// target = gr.Nodes[8]
-	// path, err = algBFS.FindTarget(source, target)
-
-	// log.Println(path, err)
-	// for _, v := range path {
-	// 	log.Println(v.Number)
-	// }
 }
