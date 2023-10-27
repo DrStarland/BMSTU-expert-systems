@@ -69,7 +69,7 @@ func (ds *BoldSearch) init(initial_nodes []*node.Node, target *node.Node) {
 /*
 Основная функция -- поиск целевой вершины
 */
-func (ds *BoldSearch) FindTarget(target *node.Node, inputs ...*node.Node) ([]*node.Node, error) {
+func (ds *BoldSearch) FindTarget(target *node.Node, inputs ...*node.Node) (bool, error) {
 	// инициализируем "рабочую память"
 	ds.init(inputs, target)
 	log.Printf("Целевая вершина: №%d", target.Number)
@@ -95,7 +95,7 @@ func (ds *BoldSearch) FindTarget(target *node.Node, inputs ...*node.Node) ([]*no
 	порядок добавления доказанных правил в процессе решения: %v.`,
 		ds.closedNodesOrder, ds.closedRulesOrder,
 	)
-	return nil, nil
+	return decisionFlag, nil
 }
 
 // Проверяет, хватает ли имеющихся узлов (фактов), чтобы доказать правило
