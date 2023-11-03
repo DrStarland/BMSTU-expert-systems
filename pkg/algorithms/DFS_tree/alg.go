@@ -17,37 +17,36 @@ type StackInterface interface {
 }
 
 type DeepSearch struct {
-	// Постоянная память
-	//// база знаний -- дерево и-или
+	//// Постоянная память
+	// база знаний -- дерево и-или
 	knowledgebase and_or_tree.Tree
 
-	// "рабочая память"
-	//// целевая вершина
-	target           *node.Node
-	openNodes        []*node.Node
-	openRules        []rule.Rule
+	//// "рабочая память"
+	// целевая вершина
+	target *node.Node
+	// списки открытых вершин и правил
+	openNodes []*node.Node
+	openRules []rule.Rule
+	// карта закрытых вершин
 	closedNodes      map[int]*node.Node
-	closedNodesOrder []int // для хранения порядка добавления
+	closedNodesOrder []int // список номеров для хранения порядка
+	// карта закрытых правил
 	closedRules      map[int]rule.Rule
-	closedRulesOrder []int // для хранения порядка добавления
-	forbiddenRules   map[int]rule.Rule
-	forbiddenNodes   map[int]*node.Node
-	stack            StackInterface
+	closedRulesOrder []int // список номеров для хранения порядка добавления
+	// запрещённые карты правил и вершин
+	forbiddenRules map[int]rule.Rule
+	forbiddenNodes map[int]*node.Node
+	// вспомогательный стек для работы лаг
+	stack StackInterface
 }
 
+// "конструктор" алгоритма поиска
 func NewSearch(tr and_or_tree.Tree) DeepSearch {
 	stck := stack.NewStack[rule.Rule]()
 	return DeepSearch{
-		knowledgebase:  tr,
-		target:         nil,
-		stack:          stck,
-		openNodes:      []*node.Node{},
-		openRules:      []rule.Rule{},
-		closedNodes:    map[int]*node.Node{},
-		closedRules:    map[int]rule.Rule{},
-		forbiddenRules: make(map[int]rule.Rule),
-		forbiddenNodes: make(map[int]*node.Node),
-		// path:          nil,
+		knowledgebase: tr,
+		target:        nil,
+		stack:         stck,
 	}
 }
 
@@ -55,6 +54,13 @@ func NewSearch(tr and_or_tree.Tree) DeepSearch {
 Инициализация рабочей памяти алгоритма перед выполнением задачи поиска
 */
 func (ds *DeepSearch) init(initial_nodes []*node.Node, target *node.Node) {
+	ds.openNodes = []*node.Node{}
+	ds.openRules = []rule.Rule{}
+	ds.closedNodes = make(map[int]*node.Node, len(initial_nodes))
+	ds.closedRules = make(map[int]rule.Rule)
+	ds.forbiddenRules = make(map[int]rule.Rule)
+	ds.forbiddenNodes = make(map[int]*node.Node)
+
 	// назначаем целевую вершину
 	ds.target = target
 	// добавляем входные вершины в список закрытых
@@ -70,18 +76,11 @@ func (ds *DeepSearch) init(initial_nodes []*node.Node, target *node.Node) {
 	}
 	// копируем все правила из базы знаний в список открытых правил
 	ds.openRules = append(ds.openRules, ds.knowledgebase.Rules...)
-	// очищаем стек
+	// очищаем стек (на случай, если это не первый запуск алгоритма)
 	for ds.stack.Len() > 0 {
 		ds.stack.Pop()
 	}
-	// ищем правило, которое порождает целевую вершину, чтобы добавить его в стек первым
-	for _, ruru := range ds.openRules {
-		if ruru.Result == target {
-			ds.stack.Push(ruru)
-			// deleteFromArray(&ds.openRules, i)
-			break
-		}
-	}
+
 	return
 }
 
@@ -99,6 +98,7 @@ func (ds *DeepSearch) FindTarget(target *node.Node, inputs ...*node.Node) ([]*no
 	// хотя бы одно подходящее под текущие данные правило
 	decisionCanBeFound := true
 
+	// основной цикл алгоритма
 	for !decisionFlag && decisionCanBeFound {
 		decisionFlag, decisionCanBeFound = ds.findRules()
 	}
@@ -108,10 +108,6 @@ func (ds *DeepSearch) FindTarget(target *node.Node, inputs ...*node.Node) ([]*no
 	} else {
 		log.Println("Решение найдено")
 	}
-
-	// for i, j := 0, len(ds.closedRulesOrder)-1; i < j; i, j = i+1, j-1 {
-	// 	ds.closedRulesOrder[i], ds.closedRulesOrder[j] = ds.closedRulesOrder[j], ds.closedRulesOrder[i]
-	// }
 
 	log.Printf(`
 	Порядок добавления найденных вершин в процессе решения: %v,
@@ -126,8 +122,8 @@ func (ds *DeepSearch) FindTarget(target *node.Node, inputs ...*node.Node) ([]*no
 // Проверяет, хватает ли имеющихся узлов (фактов), чтобы доказать правило
 func (ds *DeepSearch) checkRuleProvability(r rule.Rule) bool {
 	flag := len(r.Inputs)
-	// просто перебираем входные узлы правила, проверяя, все ли они есть
-	// в списке закрытых вершин
+	// просто перебираем входные узлы правила, проверяя,
+	// все ли они есть в списке закрытых вершин
 	for _, nod := range r.Inputs {
 		if _, ok := ds.closedNodes[nod.Number]; ok {
 			flag--
@@ -137,15 +133,57 @@ func (ds *DeepSearch) checkRuleProvability(r rule.Rule) bool {
 }
 
 /*
+добавляет переданное правило и его выходную вершину
+в карты закрытых правил и вершин соответственно
+*/
+func (ds *DeepSearch) addRuleAndResultToClosedMaps(r rule.Rule) {
+	ds.closedRules[r.Number] = r
+	ds.closedRulesOrder = append(ds.closedRulesOrder, r.Number)
+	ds.closedNodes[r.Result.Number] = r.Result
+	ds.closedNodesOrder = append(ds.closedNodesOrder, r.Result.Number)
+}
+
+/*
+Ищет позицию переданного правила в списке открытых правил и удаляет оттуда
+*/
+func (ds *DeepSearch) deleteRuleFromOpenRules(r rule.Rule) {
+	for i, v := range ds.openRules {
+		if v.Number == r.Number {
+			deleteFromArray(&ds.openRules, i)
+			break
+		}
+	}
+}
+
+/*
+Аггрегирующая функция, выполняющая работу по удалению правила и его выходной вершины
+из списка открытых правил и вершин
+*/
+func (ds *DeepSearch) deleteRuleAndResultFromOpenLists(r rule.Rule) {
+	ds.deleteResultNodeFromOpenNodes(r.Result)
+	ds.deleteRuleFromOpenRules(r)
+}
+
+/*
 Поиск первого правила, которое можно доказать, и соответствующие этому операции
-над рабочей памятью в случае обнаружения
+над рабочей памятью в случае обнаружения.
+Синтаксис языка позволяет указать в сигнатуре функции имена переменных,
+значения которых нужно вернуть, что позволяет не указывать их явно в return.
+По умолчанию значения этих переменных равны false.
 */
 func (ds *DeepSearch) findRules() (decisionFlag bool, decisionCanBeFound bool) {
-	// если стек опустел -- все возможности решения исчерпаны,
-	// решение не может быть найдено
+	/* На первой итерации стек пуст. Также он может опустеть в ходе работы алгоритма,
+	если рассматриваемая ветвь не может быть доказана.
+	Ищем первое правило, ведущее к целевое вершине */
 	if ds.stack.Len() == 0 {
-		decisionFlag, decisionCanBeFound = false, false
-		return
+		ruleFinded := ds.addToStackRuleResultingToTarget()
+		// если стек опустел, а новое правило не было найдено --
+		// все возможности решения исчерпаны, решение не может быть найдено
+		if !ruleFinded {
+			decisionCanBeFound = false
+			return
+		}
+		// иначе работа функции продолжается
 	}
 	log.Println("Стек не пуст")
 
@@ -153,85 +191,72 @@ func (ds *DeepSearch) findRules() (decisionFlag bool, decisionCanBeFound bool) {
 	// в начале итераций это будет первое правило, ведущее к целевой вершине
 	r, _ := ds.stack.Peek()
 	log.Println(r)
-	// просматриваем базу открытых правил
+	// проверяем, доказуемо ли текущее рассматриваемое правило
 	if ds.checkRuleProvability(r) {
-		ds.closedRules[r.Number] = r
-		ds.closedRulesOrder = append(ds.closedRulesOrder, r.Number)
-		ds.closedNodes[r.Result.Number] = r.Result
-		ds.closedNodesOrder = append(ds.closedNodesOrder, r.Result.Number)
-
+		// если да, то сохраняем его и его выходную вершину
+		// в карты закрытых правил и вершин
+		ds.addRuleAndResultToClosedMaps(r)
 		// удаляем их из списков открытых правил и вершин
-		ds.deleteResultNodeFromOpenNodes(r.Result)
-		for i, v := range ds.openRules {
-			if v.Number == r.Number {
-				deleteFromArray(&ds.openRules, i)
-				break
-			}
-		}
+		ds.deleteRuleAndResultFromOpenLists(r)
 		// если уже получилось доказать целевую вершину -- выходим
 		if _, ok := ds.closedNodes[ds.target.Number]; ok {
-			decisionFlag, decisionCanBeFound = true, true
+			decisionFlag = true
 			return
 		}
+		/* даже если в этой ветке не получится найти решение, можно сразу указать,
+		   что это возможно, выставив флаг decisionCanBeFound в истинное значение */
 		decisionCanBeFound = true
-		// проверяем, можно ли найти решение в таких условиях, если до этого не могли
+		/* проверяем, можно ли найти решение в таких условиях, если до этого не могли
+		   поиск в ширину может найти решение, даже если какие-то правила ещё не были
+		   рассмотрены во время обхода в глубину */
 		decisionFlag = ds.startBFS()
-		log.Println("После бек-трекинга")
+		/* извлекаем правило из стека, поскольку оно уже в любом случае записано в
+		   карту закрытых правил и считается доказанным */
 		ds.stack.Pop()
 		if decisionFlag {
-			// если получилось, опустошаем стек
+			// если получилось, опустошаем стек, записывая его содержимое в карту закр. правил
 			for ds.stack.Len() > 0 {
-				ruru, _ := ds.stack.Pop()
-				ds.closedRules[ruru.Number] = ruru
-				ds.closedRulesOrder = append(ds.closedRulesOrder, ruru.Number)
-				ds.closedNodes[ruru.Result.Number] = ruru.Result
-				ds.closedNodesOrder = append(ds.closedNodesOrder, ruru.Result.Number)
+				rul, _ := ds.stack.Pop()
+				ds.addRuleAndResultToClosedMaps(rul)
 			}
 			return
 		}
-		log.Println("Я здесь 2")
-		ancestorFound := ds.findAncestor(r)
-		if !ancestorFound {
-			ds.stack.Pop()
-			ds.forbiddenRules[r.Number] = r
-
-			for i, v := range ds.openRules {
-				if v.Number == r.Number {
-					deleteFromArray(&ds.openRules, i)
-					break
-				}
-			}
-		}
-		return
 	} else {
+		// текущее правило не может быть доказано. нужно проверить,
+		// возможно ли это в принципе
 		log.Println("Правило сходу невозможно доказать")
+		// смотрим, можно ли спуститься по дереву ещё ниже. иными словами,
+		// есть ли у этого правила входные вершины, которые ещё не попали в список
+		// запрещённых, и есть ли правила, которые позволят доказать эти входные вершины
 		ancestorFound := ds.findAncestor(r)
+		// если ничего не получилось найти, заносим это правило в список запрещённых
+		// правил и удаляем из списка открытых
 		if !ancestorFound {
 			log.Println("Нет потомков")
+			// также убираем правило из стека
 			ds.stack.Pop()
 			ds.forbiddenRules[r.Number] = r
-
-			for i, v := range ds.openRules {
-				if v.Number == r.Number {
-					deleteFromArray(&ds.openRules, i)
-					break
-				}
-			}
+			ds.deleteRuleFromOpenRules(r)
 		}
 	}
-
+	// если выполнение дошло до этой точки, то ещё можно утверждать, что
+	// решение ещё возможно найти на последующих итерациях
 	decisionFlag, decisionCanBeFound = false, true
 	return
 }
 
+/*
+используем разработанный ранее обход в ширину, чтобы проверить
+*/
 func (ds *DeepSearch) startBFS() bool {
+	// создаём "объект" алгоритма
 	alg := bfs_tree.NewSearch(ds.knowledgebase)
+	// в качестве входных вершин задаём закрытые вершины поиска в глубину
 	facts := make([]*node.Node, 0, len(ds.closedNodes))
+	// переводим карту в массив
 	for _, nod := range ds.closedNodes {
 		facts = append(facts, nod)
 	}
-
-	log.Println(facts)
 
 	decisionFlag, _ := alg.FindTarget(ds.target,
 		facts...,
@@ -240,41 +265,67 @@ func (ds *DeepSearch) startBFS() bool {
 }
 
 /*
- */
+Поиск предшествующих переданному правилу descendant правил, которые позволяют получить
+входные вершины для descendant. Функция возвращает флаг, показывающий, удалось ли
+найти что-то и добавить в стек.
+*/
 func (ds *DeepSearch) findAncestor(descendant rule.Rule) (ancestorFound bool) {
-	// просматриваем входные вершины правила
+	// просматриваем входные переданного вершины правила
 	for _, nod := range descendant.Inputs {
 		// проверяем, входит ли данная вершина в закрытые или запрещённые списки
 		// ни та, ни другая нас не будет интересовать
-		_, nodeInClosedNodes := ds.closedNodes[nod.Number]
-		_, nodeInForbiddenNodes := ds.forbiddenNodes[nod.Number]
-		if !nodeInForbiddenNodes && !nodeInClosedNodes {
+		_, nodeIsInClosedNodes := ds.closedNodes[nod.Number]
+		_, nodeIsInForbiddenNodes := ds.forbiddenNodes[nod.Number]
+		if !nodeIsInForbiddenNodes && !nodeIsInClosedNodes {
 			// ищем, выходной вершиной какого правила является эта вершина
 			// (ищем первое встречное)
 			for _, ruru := range ds.openRules {
-				// если это правило не в разделе запрещённых, добавляем
-				// его в стек
+				// если это правило не в разделе запрещённых, добавляем его в стек
 				_, ok := ds.forbiddenRules[ruru.Number]
 				if ruru.Result == nod && !ok {
 					ds.stack.Push(ruru)
+					// поскольку поиск идёт в глубину, сразу выходим
 					return true
 				}
 			}
-			// если ни одно правило не ведёт к этой вершине, делаем вывод
-			// что она лежит в самом низу дерева и, следовательно, недосягаема,
-			// если не была задана изначально
+			/* если ни одно правило не ведёт к этой вершине, делаем вывод
+			что она лежит в самом низу дерева либо ведущие к ней правила являются
+			запрещёнными. Следовательно, вершина недосягаема и должна быть запрещена */
 			ds.forbiddenNodes[nod.Number] = nod
 			ds.deleteResultNodeFromOpenNodes(nod)
 			return false
 		}
 	}
 
+	/* если выполнение функции дошло до этой точки, то в стек не получилось ничего
+	добавить. Это правило можно добавить в карту запрещённых, как и его входные
+	вершины, не находящиеся в карте закрытых вершин */
 	ds.forbiddenRules[descendant.Number] = descendant
 	for _, nod := range descendant.Inputs {
-		ds.forbiddenNodes[nod.Number] = nod
-		ds.deleteResultNodeFromOpenNodes(nod)
+		if _, ok := ds.closedNodes[nod.Number]; !ok {
+			ds.forbiddenNodes[nod.Number] = nod
+			ds.deleteResultNodeFromOpenNodes(nod)
+		}
 	}
 
+	return false
+}
+
+/*
+Функция осуществляет поиск первого правила, содержащегося в списке открытых правил,
+выходной вершиной которого является целевая вершина.
+
+Возвращаемое значение показывает, удалось ли найти такое правило.
+*/
+func (ds DeepSearch) addToStackRuleResultingToTarget() (ruleFinded bool) {
+	for _, rul := range ds.openRules {
+		// проверяем, не содержится ли это правило в списке запрещённых
+		_, ok := ds.forbiddenRules[rul.Number]
+		if rul.Result == ds.target && !ok {
+			ds.stack.Push(rul)
+			return true
+		}
+	}
 	return false
 }
 
@@ -314,84 +365,3 @@ func deleteFromArray(arr interface{}, i int) {
 		}
 	}
 }
-
-// class AlgorithmDFS:
-//     def __init__(self, graph: models.Graph):
-//         self._graph: models.Graph = graph
-
-//     def search(
-//         self,
-//         in_vertexes: models.Vertex,
-//         target: models.Vertex
-//     ):
-//         for vertex in self._graph.vertexes():
-//             if vertex.number in in_vertexes:
-//                 vertex.state = models.VertexState.APPROVED
-
-//         stack: Deque = deque()
-//         forbidden_rules: List[models.Rule] = []
-//         approved_rules: List[models.Rule] = []
-
-//         stack.append(target)
-//         while stack:
-//             value = stack[-1]
-//             # цель вершина
-//             if (isinstance(value, models.Vertex)):
-//                 target_vertex = typing.cast(models.Vertex, value)
-
-//                 # если уже доказано
-//                 if target_vertex.state == models.VertexState.APPROVED:
-//                     stack.pop()
-//                     continue
-
-//                 # правило которое доказывает вершину
-//                 target_rule = self._search_rule(target_vertex)
-//                 if not target_rule:
-//                     target_vertex.state = models.VertexState.FORBIDDEN
-//                     stack.pop()
-//                 elif target_rule.state == models.RuleState.APPROVED:
-//                     target_vertex.state = models.VertexState.APPROVED
-//                 else:
-//                     stack.append(target_rule)
-//             # цель правило
-//             else:
-//                 target_rule = typing.cast(models.Rule, value)
-//                 # вершина которая не доказана
-//                 target_vertex = self._search_vertex(target_rule)
-
-//                 # нет недоказанных вершин
-//                 if not target_vertex:
-//                     target_rule.state = models.RuleState.APPROVED
-//                     approved_rules.append(target_rule)
-//                     stack.pop()
-
-//                 # входная вершина запрещена
-//                 elif target_vertex.state == models.VertexState.FORBIDDEN:
-//                     target_rule.state = models.RuleState.FORBIDDEN
-//                     forbidden_rules.append(target_rule)
-//                     stack.pop()
-
-//                 # иначе вершина неизвестна
-//                 else:
-//                     stack.append(target_vertex)
-
-//         return approved_rules, forbidden_rules
-
-//     def _search_rule(
-//         self,
-//         target: models.Vertex,
-//     ) -> Optional[models.Rule]:
-//         for rule in self._graph.rules():
-//             if rule.out_vertex == target \
-//                 and rule.state != models.RuleState.FORBIDDEN:
-//                 return rule
-//         return None
-
-//     def _search_vertex(
-//         self,
-//         rule: models.Rule,
-//     ) -> Optional[models.Vertex]:
-//         for vertex in rule.in_vertexes:
-//             if vertex.state != models.VertexState.APPROVED:
-//                 return vertex
-//         return None

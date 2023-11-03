@@ -80,8 +80,8 @@ func main() {
 		// tr.Nodes[3], tr.Nodes[4], tr.Nodes[12], tr.Nodes[20],
 		// tr.Nodes[3], tr.Nodes[4], tr.Nodes[5], tr.Nodes[6],
 		// tr.Nodes[15], tr.Nodes[16],
-		// tr.Nodes[9], tr.Nodes[10], tr.Nodes[15], tr.Nodes[16],
-		tr.Nodes[9], tr.Nodes[10], tr.Nodes[7], tr.Nodes[6], tr.Nodes[8], tr.Nodes[5], tr.Nodes[13],
+		tr.Nodes[9], tr.Nodes[10], tr.Nodes[15], tr.Nodes[16],
+		// tr.Nodes[9], tr.Nodes[10], tr.Nodes[7], tr.Nodes[6], tr.Nodes[8], tr.Nodes[5], tr.Nodes[13],
 	)
 	// tr.Nodes[13], tr.Nodes[5], tr.Nodes[6], tr.Nodes[7], tr.Nodes[8], tr.Nodes[9], tr.Nodes[10],
 
