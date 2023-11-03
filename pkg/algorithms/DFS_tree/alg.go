@@ -36,7 +36,7 @@ type DeepSearch struct {
 	// запрещённые карты правил и вершин
 	forbiddenRules map[int]rule.Rule
 	forbiddenNodes map[int]*node.Node
-	// вспомогательный стек для работы лаг
+	// вспомогательный стек для работы алгоритма
 	stack StackInterface
 }
 
@@ -156,7 +156,7 @@ func (ds *DeepSearch) deleteRuleFromOpenRules(r rule.Rule) {
 }
 
 /*
-Аггрегирующая функция, выполняющая работу по удалению правила и его выходной вершины
+Агрегирующая функция, выполняющая работу по удалению правила и его выходной вершины
 из списка открытых правил и вершин
 */
 func (ds *DeepSearch) deleteRuleAndResultFromOpenLists(r rule.Rule) {
@@ -331,7 +331,7 @@ func (ds DeepSearch) addToStackRuleResultingToTarget() (ruleFinded bool) {
 
 /*
 Функция выполняет поиск позиции целевой вершины в списке (массиве)
-открытых вершин и удаляет её
+открытых вершин и удаляет эту вершину из списка
 */
 func (ds *DeepSearch) deleteResultNodeFromOpenNodes(target *node.Node) {
 	for j, nod := range ds.openNodes {
