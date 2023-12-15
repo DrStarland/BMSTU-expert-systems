@@ -1,89 +1,61 @@
 package main
 
 import (
-	"expert_systems/pkg/algorithms/DFS_tree"
-	"expert_systems/pkg/models/and_or_tree"
+	"expert_systems/pkg/algorithms/DFS_logic"
+	formalaparsing "expert_systems/pkg/algorithms/formala-parsing"
+	"expert_systems/pkg/models/types"
 	"log"
 )
 
+var Runes = types.Runestring("ᚠ ᚢ ᚦ ᚫ ᚱ ᚲ ᚷ ᚹ ᚺ ᚾ ᛁ ᛃ ᛇ ᛈ ᛉ ᛋ ᛏ ᛒ ᛖ ᛗ ᛚ ᛝ ᛟ ᛞ ᚸ")
+
 func main() {
-	tr, err := and_or_tree.NewTree(
-		and_or_tree.RuleFormat{
-			Number:        101,
-			InputsNumbers: []int{1, 2},
-			ResultNumber:  11,
-		},
-		and_or_tree.RuleFormat{
-			Number:        102,
-			InputsNumbers: []int{3, 4},
-			ResultNumber:  11,
-		},
-		and_or_tree.RuleFormat{
-			Number:        103,
-			InputsNumbers: []int{5, 6},
-			ResultNumber:  12,
-		},
-		and_or_tree.RuleFormat{
-			Number:        104,
-			InputsNumbers: []int{7, 8},
-			ResultNumber:  14,
-		},
-		and_or_tree.RuleFormat{
-			Number:        105,
-			InputsNumbers: []int{9, 10},
-			ResultNumber:  21,
-		},
-		and_or_tree.RuleFormat{
-			Number:        106,
-			InputsNumbers: []int{11, 4, 12},
-			ResultNumber:  19,
-		},
-		and_or_tree.RuleFormat{
-			Number:        107,
-			InputsNumbers: []int{12, 13, 14},
-			ResultNumber:  20,
-		},
-		and_or_tree.RuleFormat{
-			Number:        108,
-			InputsNumbers: []int{15, 16},
-			ResultNumber:  20,
-		},
-		and_or_tree.RuleFormat{
-			Number:        109,
-			InputsNumbers: []int{17, 18},
-			ResultNumber:  22,
-		},
-		and_or_tree.RuleFormat{
-			Number:        110,
-			InputsNumbers: []int{19, 20},
-			ResultNumber:  23,
-		},
-		and_or_tree.RuleFormat{
-			Number:        111,
-			InputsNumbers: []int{20, 21},
-			ResultNumber:  23,
-		},
-		and_or_tree.RuleFormat{
-			Number:        112,
-			InputsNumbers: []int{21, 22},
-			ResultNumber:  24,
-		},
-	)
-	if err != nil {
-		log.Panicln(err)
-	}
+	// ограничения: без вложенных предикатов, без бэктрекинга
+	facts, rules, target := ex1()
+	alg := DFS_logic.NewSearch(facts, rules, target)
 
-	alg := DFS_tree.NewSearch(tr)
-	path, err := alg.FindTarget(tr.Nodes[23], // tr.Nodes[1], tr.Nodes[3], tr.Nodes[4],
-		// tr.Nodes[11], tr.Nodes[4], tr.Nodes[12], tr.Nodes[20],
-		// tr.Nodes[1], tr.Nodes[2], tr.Nodes[4], tr.Nodes[12], tr.Nodes[20],
-		// tr.Nodes[3], tr.Nodes[4], tr.Nodes[12], tr.Nodes[20],
-		// tr.Nodes[3], tr.Nodes[4], tr.Nodes[5], tr.Nodes[6],
-		// tr.Nodes[15], tr.Nodes[16],
-		tr.Nodes[9], tr.Nodes[10], tr.Nodes[15], tr.Nodes[16],
-		// tr.Nodes[9], tr.Nodes[10], tr.Nodes[7], tr.Nodes[6], tr.Nodes[8], tr.Nodes[5], tr.Nodes[13],
-	)
-	// tr.Nodes[13], tr.Nodes[5], tr.Nodes[6], tr.Nodes[7], tr.Nodes[8], tr.Nodes[9], tr.Nodes[10],
+	proved := alg.ProveTarget()
+	log.Println(proved)
+}
 
-	log.Println(path)
+func ex1() ([]types.Runestring, []types.Runestring, types.Runestring) {
+	facts := types.Runestring(
+		`p1(W)
+p6(M)
+p7(N, M)
+p8(N, A)`)
+	rules := types.Runestring(
+		`p1(x) & p2(y) & p3(x,y,z) & p4(z) → p5(x)
+p6(x) & p7(N, x) → p3(W, x, N)
+p6(x) → p2(x)
+p8(x, A) → p4(x)
+`)
+
+	target := types.Runestring("p5(W)")
+	facts_result := formalaparsing.CleansedRunestrings(facts)
+	rules_result := formalaparsing.CleansedRunestrings(rules)
+	return facts_result, rules_result, target
+}
+
+func ex2() ([]types.Runestring, []types.Runestring, types.Runestring) {
+	facts := types.Runestring(
+		`man(Adam)
+man(Herasim)
+man(Wallie)
+man(Pup)
+woman(Mumu)
+woman(Eva)
+child(Adam, Eva, Wallie)
+child(Herasim, Mumu, Pup)`)
+	rules := types.Runestring(
+		`man(x) & child(x, y, z) → father(x, z)
+man(x) & child(y, x, z) → father(x, z)
+woman(x) & child(y, x, z) → mother(x, z)
+woman(x) & child(x, y, z) → mother(x, z)
+`)
+
+	target := types.Runestring("mother(Eva, Wallie)")
+	facts_result := formalaparsing.CleansedRunestrings(facts)
+	rules_result := formalaparsing.CleansedRunestrings(rules)
+	return facts_result, rules_result, target
 }
