@@ -1,61 +1,159 @@
 package main
 
 import (
-	"expert_systems/pkg/algorithms/DFS_logic"
-	formalaparsing "expert_systems/pkg/algorithms/formala-parsing"
+	resolution "expert_systems/pkg/algorithms/Resolution"
+	"expert_systems/pkg/models/logic"
 	"expert_systems/pkg/models/types"
-	"log"
 )
 
 var Runes = types.Runestring("ᚠ ᚢ ᚦ ᚫ ᚱ ᚲ ᚷ ᚹ ᚺ ᚾ ᛁ ᛃ ᛇ ᛈ ᛉ ᛋ ᛏ ᛒ ᛖ ᛗ ᛚ ᛝ ᛟ ᛞ ᚸ")
 
+const (
+	NEG = true
+	POS = false
+)
+
 func main() {
 	// ограничения: без вложенных предикатов, без бэктрекинга
-	facts, rules, target := ex1()
-	alg := DFS_logic.NewSearch(facts, rules, target)
+	// 	facts, rules, target := ex1()
+	// 	alg := DFS_logic.NewSearch(facts, rules, target)
 
-	proved := alg.ProveTarget()
-	log.Println(proved)
-}
+	// 	proved := alg.ProveTarget()
+	// 	log.Println(proved)
+	// }
 
-func ex1() ([]types.Runestring, []types.Runestring, types.Runestring) {
-	facts := types.Runestring(
-		`p1(W)
-p6(M)
-p7(N, M)
-p8(N, A)`)
-	rules := types.Runestring(
-		`p1(x) & p2(y) & p3(x,y,z) & p4(z) → p5(x)
-p6(x) & p7(N, x) → p3(W, x, N)
-p6(x) → p2(x)
-p8(x, A) → p4(x)
-`)
+	// P2(x1, y1) | P5(w1) | !P6(z1)
+	// P3(C) | !P4(z1) | P1(x1, y1, z1)
+	f2_1 := logic.Formula{
+		Items: []*logic.Disjunct{
+			{
+				Predicates: []*logic.Predicate{
+					{
+						Name:     "P2",
+						Negative: POS,
+						Args: []logic.Variable{
+							logic.NewVariable("x1"),
+							logic.NewVariable("y1"),
+						},
+					},
+					{
+						Name:     "P5",
+						Negative: POS,
+						Args: []logic.Variable{
+							logic.NewVariable("w1"),
+						},
+					},
+					{
+						Name:     "P6",
+						Negative: NEG,
+						Args: []logic.Variable{
+							logic.NewVariable("z1"),
+						},
+					},
+				},
+			},
 
-	target := types.Runestring("p5(W)")
-	facts_result := formalaparsing.CleansedRunestrings(facts)
-	rules_result := formalaparsing.CleansedRunestrings(rules)
-	return facts_result, rules_result, target
-}
+			{
+				Predicates: []*logic.Predicate{
+					{
+						Name:     "P3",
+						Negative: POS,
+						Args: []logic.Variable{
+							logic.NewConst("C"),
+						},
+					},
+					{
+						Name:     "P4",
+						Negative: NEG,
+						Args: []logic.Variable{
+							logic.NewVariable("z1"),
+						},
+					},
+					{
+						Name:     "P1",
+						Negative: POS,
+						Args: []logic.Variable{
+							logic.NewVariable("x1"),
+							logic.NewVariable("y1"),
+							logic.NewVariable("z1"),
+						},
+					},
+				},
+			},
+		},
+	}
 
-func ex2() ([]types.Runestring, []types.Runestring, types.Runestring) {
-	facts := types.Runestring(
-		`man(Adam)
-man(Herasim)
-man(Wallie)
-man(Pup)
-woman(Mumu)
-woman(Eva)
-child(Adam, Eva, Wallie)
-child(Herasim, Mumu, Pup)`)
-	rules := types.Runestring(
-		`man(x) & child(x, y, z) → father(x, z)
-man(x) & child(y, x, z) → father(x, z)
-woman(x) & child(y, x, z) → mother(x, z)
-woman(x) & child(x, y, z) → mother(x, z)
-`)
+	f2_2 := logic.Formula{
+		Items: []*logic.Disjunct{
+			{
+				Predicates: []*logic.Predicate{
+					{
+						Name:     "P2",
+						Negative: NEG,
+						Args: []logic.Variable{
+							logic.NewConst("A"),
+							logic.NewConst("B"),
+						},
+					},
+					{
+						Name:     "P5",
+						Negative: POS,
+						Args: []logic.Variable{
+							logic.NewVariable("w2"),
+						},
+					},
+					{
+						Name:     "P6",
+						Negative: POS,
+						Args: []logic.Variable{
+							logic.NewVariable("z2"),
+						},
+					},
+				},
+			},
 
-	target := types.Runestring("mother(Eva, Wallie)")
-	facts_result := formalaparsing.CleansedRunestrings(facts)
-	rules_result := formalaparsing.CleansedRunestrings(rules)
-	return facts_result, rules_result, target
+			{
+				Predicates: []*logic.Predicate{
+					{
+						Name:     "P4",
+						Negative: POS,
+						Args: []logic.Variable{
+							logic.NewVariable("z2"),
+						},
+					},
+					{
+						Name:     "P3",
+						Negative: NEG,
+						Args: []logic.Variable{
+							logic.NewVariable("z2"),
+						},
+					},
+				},
+			},
+		},
+	}
+
+	// // _ !P1(A, B, C)
+	neg_target := logic.Formula{
+		Items: []*logic.Disjunct{
+			{
+				Predicates: []*logic.Predicate{
+					{
+						Name:     "P1",
+						Negative: NEG,
+						Args: []logic.Variable{
+							logic.NewConst("A"),
+							logic.NewConst("B"),
+							logic.NewConst("C"),
+						},
+					},
+				},
+				// logic.Predicate { "P1", NEG, { Term::const_("A"), Term::const_("B"), Term::const_("C") } },
+			},
+		},
+	}
+
+	rs := resolution.NewSearch([]logic.Formula{f2_1, f2_2}, neg_target)
+	rs.Solve()
+
 }
