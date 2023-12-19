@@ -14,14 +14,6 @@ const (
 )
 
 func main() {
-	// ограничения: без вложенных предикатов, без бэктрекинга
-	// 	facts, rules, target := ex1()
-	// 	alg := DFS_logic.NewSearch(facts, rules, target)
-
-	// 	proved := alg.ProveTarget()
-	// 	log.Println(proved)
-	// }
-
 	// P2(x1, y1) | P5(w1) | !P6(z1)
 	// P3(C) | !P4(z1) | P1(x1, y1, z1)
 	f2_1 := logic.Formula{
