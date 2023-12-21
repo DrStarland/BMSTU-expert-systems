@@ -1,7 +1,6 @@
 package logic
 
 import (
-	"expert_systems/pkg/models/enums"
 	"fmt"
 )
 
@@ -17,10 +16,14 @@ func (rule Rule) String() string {
 	sep := " и "
 	if len(rule.Inputs) > 1 {
 		inp += rule.Inputs[0].String() + sep
+		for i := 0; i < len(rule.Inputs)-1; i++ {
+			inp += rule.Inputs[i].String() + sep
+		}
+		inp += rule.Inputs[len(rule.Inputs)-1].String() + ", "
+	} else if len(rule.Inputs) == 1 {
+		inp += rule.Inputs[0].String() + ", "
 	}
-	for i := 0; i < len(rule.Inputs); i++ {
-		inp += rule.Inputs[i].String() + sep
-	}
+
 	return fmt.Sprintf("№%d: если %sто %s", rule.Id, inp, rule.Result.String())
 }
 
@@ -29,7 +32,7 @@ type Variable struct {
 	Name     string
 	Negative bool
 	Const    bool
-	Status   enums.VarStatusEnum
+	// Status   enums.VarStatusEnum
 }
 
 func (t1 Variable) EqualTo(t2 Variable) bool {
@@ -114,50 +117,3 @@ func NewDisjunct(preds []*Predicate) Disjunct {
 type Formula struct {
 	Items []*Disjunct
 }
-
-// type Predicate_r struct {
-// 	Name     string
-// 	Negative bool
-// 	Vars     []Var_r
-// }
-
-// func NewPredicate_r(p Predicate, disjunct_idx int, vars_dict map[string]Var_r) Predicate_r {
-// 	self := Predicate_r{}
-
-// 	self.Name = p.Name
-// 	self.Negative = p.Negative
-
-// 	if vars_dict == nil {
-// 		vars_dict = make(map[string]Var_r)
-// 	}
-
-// 	self.Vars = make([]Var_r, 0)
-// 	for _, arg := range p.Args {
-// 		name := arg.Name
-// 		if !unicode.IsUpper(rune(arg.Name[0])) {
-// 			name = arg.Name + fmt.Sprintf("_%d", disjunct_idx)
-// 		}
-// 		if _, ok := vars_dict[name]; !ok {
-// 			variable := NewVar_r(arg, name)
-// 			vars_dict[name] = variable
-
-// 		}
-
-// 		self.Vars = append(self.Vars, vars_dict[name])
-// 	}
-// 	return self
-// }
-
-// func (pred Predicate_r) String() string {
-// 	arguments := make([]string, 0, len(pred.Vars))
-// 	for _, vr := range pred.Vars {
-// 		arguments = append(arguments, vr.String())
-// 	}
-// 	x := fmt.Sprintf(`%s(%s)`, pred.Name, strings.Join(arguments, ", "))
-
-// 	if !pred.Negative {
-// 		return x
-// 	} else {
-// 		return string('¬') + x
-// 	}
-// }

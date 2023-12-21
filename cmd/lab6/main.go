@@ -2,7 +2,6 @@ package main
 
 import (
 	"expert_systems/pkg/algorithms/BFS_logic"
-	"expert_systems/pkg/models/enums"
 	"expert_systems/pkg/models/logic"
 	"expert_systems/pkg/models/types"
 	"log"
@@ -17,16 +16,16 @@ func main() {
 			Inputs: []logic.Predicate{
 				{
 					Name: "не умеет летать",
-					Args: []logic.Variable{{Name: "x"}},
+					Args: []logic.Variable{{Name: "y"}},
 				},
 				{
 					Name: "ловит рыбу под водой",
-					Args: []logic.Variable{{Name: "x"}},
+					Args: []logic.Variable{{Name: "y"}},
 				},
 			},
 			Result: logic.Predicate{
 				Name: "умеет плавать",
-				Args: []logic.Variable{{Name: "x"}},
+				Args: []logic.Variable{{Name: "y"}},
 			},
 		},
 		logic.Rule{
@@ -70,21 +69,17 @@ func main() {
 		},
 	)
 
+	log.Printf("Доказываем правило %d: %s", 0, a.Rules[0].String())
 	res := a.Prove(
 		[]logic.Predicate{ // facts =
 			{
 				Name:   "является пингвином",
-				Args:   []logic.Variable{{Name: "x_GERTRUDA", Status: enums.VAL}},
+				Args:   []logic.Variable{{Name: "ПЕН-ПЕН", Const: true}},
 				Proved: true,
 			},
-			//            logic.Predicate{
-			//                name = "не умеет летать",
-			//                variables = []logic.Variable{{"X_GERTRUDA", Variable.Status.HAS_VALUE}}
-			//            }
 		},
-		0, // targetRule
+		0, // индекс целевого правила в базе правил
 	)
 
-	// log.Println("Доказываем правило %d: %s", a.rules)
-	log.Println(res)
+	log.Printf("Результат: %v\n", res)
 }
