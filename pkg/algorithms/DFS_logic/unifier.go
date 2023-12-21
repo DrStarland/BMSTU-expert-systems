@@ -87,6 +87,18 @@ func (un *Unifier) Substitute(var_name string, value string) {
 	log.Println("SUBSTITUTIONS OUT", un.variables)
 }
 
+func removeDuplicateStr(strSlice []string) []string {
+	allKeys := make(map[string]bool)
+	list := []string{}
+	for _, item := range strSlice {
+		if _, value := allKeys[item]; !value {
+			allKeys[item] = true
+			list = append(list, item)
+		}
+	}
+	return list
+}
+
 func (un *Unifier) Bind(var_name1 string, var_name2 string) {
 	if _, ok := un.bindings[var_name1]; !ok {
 		un.bindings[var_name1] = make([]string, 0)
@@ -99,8 +111,11 @@ func (un *Unifier) Bind(var_name1 string, var_name2 string) {
 	un.bindings[var_name1] = append(un.bindings[var_name1].([]string), var_name2)
 	un.bindings[var_name2] = append(un.bindings[var_name2].([]string), var_name1)
 	// быстрый для написания способ удалить повторяющиеся значения
-	un.bindings[var_name1] = hashset.New(un.bindings[var_name1]).Values()
-	un.bindings[var_name2] = hashset.New(un.bindings[var_name2]).Values()
+	// un.bindings[var_name1] = hashset.New(un.bindings[var_name1]).Values()
+	// un.bindings[var_name2] = hashset.New(un.bindings[var_name2]).Values()
+
+	un.bindings[var_name1] = removeDuplicateStr(un.bindings[var_name2].([]string))
+	un.bindings[var_name1] = removeDuplicateStr(un.bindings[var_name2].([]string))
 
 	log.Println("SET WORKS RESULT", un.bindings[var_name1], un.bindings[var_name2])
 
@@ -128,6 +143,39 @@ func (un *Unifier) applyChanges(substs, binds map[string]string) {
 func (un *Unifier) cancelChanges(transactions []any) {
 	if transactions == nil {
 		return
+	}
+	for _, t := range transactions {
+		un.cancelChange(t.([]any))
+	}
+
+}
+
+func removeFromSlice(arr []string, tar string) []string {
+	for i, st := range arr {
+		if st == tar {
+			if i != len(arr)-1 {
+				return arr[:i]
+			}
+			return append(arr[:i], arr[i+1:]...)
+		}
+	}
+	// append(slice[:index], slice[index+1:]...)
+	return arr
+}
+
+func (un *Unifier) cancelChange(t []any) {
+	substs, binds := t[0].(map[string]string), t[1].(map[string]string)
+
+	for var_name1, var_name2 := range binds {
+		un.bindings[var_name1] = removeFromSlice(un.bindings[var_name1].([]string), var_name2)
+		un.bindings[var_name2] = removeFromSlice(un.bindings[var_name2].([]string), var_name1)
+	}
+	for var_name, _ := range substs {
+		vari := un.variables[var_name]
+		vari.Value = ""
+		vari.Status = enums.NOVAL
+		un.variables[var_name] = vari
+		delete(un.substitutions, var_name)
 	}
 }
 

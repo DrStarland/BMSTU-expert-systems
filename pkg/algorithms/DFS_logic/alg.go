@@ -37,15 +37,15 @@ func (ds *DeepSearch) init() {
 
 func (ds *DeepSearch) ProveTarget() bool {
 	ds.init()
-	proved, _, hm := ds.proveRecursive(ds.target, nil, 0)
+	proved, _, hm := ds.proveRecursive(ds.target, 0)
 	log.Println("Main HM", hm)
 	return proved
 }
 
-func (ds *DeepSearch) proveRecursive(target logic.Predicate_r, parent any, start_search_idx int) (bool, int, []any) {
+func (ds *DeepSearch) proveRecursive(target logic.Predicate_r, start_search_idx int) (bool, int, []any) {
 	decisionCanBeFound := true
 
-	log.Println(ds.unifier.variables)
+	log.Println("Target: ", target)
 
 	for decisionCanBeFound {
 		matched, match_idx := ds.findAtomForUnification(target, start_search_idx)
@@ -71,29 +71,24 @@ func (ds *DeepSearch) proveRecursive(target logic.Predicate_r, parent any, start
 			sub_idx := 0
 
 			for sub_idx < n {
-				ok, start_idx_new, trans := ds.proveRecursive(v.Inputs[sub_idx], nil, start_idx[sub_idx])
+				ok, start_idx_new, trans := ds.proveRecursive(v.Inputs[sub_idx], start_idx[sub_idx])
 				if ok {
 					start_idx[sub_idx] = start_idx_new + 1
 					transactions[sub_idx] = trans
 					sub_idx++
+				} else {
+					transactions[sub_idx] = make([]any, 0)
+					start_idx[sub_idx] = 0
+					sub_idx--
+					if sub_idx < 0 {
+						break
+					}
+					ds.unifier.cancelChanges(transactions[sub_idx])
 				}
-				// else {
-				// 	transactions[sub_idx] = make([]any, 0)
-				// 	start_idx[sub_idx] = 0
-				// 	sub_idx--
-				// 	if sub_idx < 0 {
-				// 		break
-				// 	}
-				// 	// эта ветка не реализована
-				// 	ds.unifier.cancelChanges(transactions[sub_idx])
-				// }
 			}
 			if sub_idx == n {
 				_res := []any{base_transaction}
-
-				_res = append(_res, utils.MySum(transactions)...)
-				log.Println("TRANSACTIONS", _res)
-				return true, match_idx, _res
+				return true, match_idx, append(_res, utils.MySum(transactions)...)
 			} else {
 				return false, -1, nil
 			}
@@ -104,16 +99,27 @@ func (ds *DeepSearch) proveRecursive(target logic.Predicate_r, parent any, start
 }
 
 func (ds *DeepSearch) findAtomForUnification(target logic.Predicate_r, start_search_idx int) (logic.Term, int) {
-	for i := start_search_idx; i < len(ds.facts); i++ {
-		if ok, _ := ds.unifier.unifyPredicate(target, ds.facts[i], true); ok { //  check_only=true
-			return ds.facts[i], i
+	idx := -1
+	for _, f := range ds.facts {
+		idx += 1
+		if idx < start_search_idx {
+			continue
+		}
+
+		if ok, _ := ds.unifier.unifyPredicate(target, f, true); ok {
+			return f, idx
 		}
 	}
 
-	for i := start_search_idx; i < len(ds.rules); i++ {
-		if ok, _ := ds.unifier.unifyPredicate(target, ds.rules[i].Result, true); ok {
-			return ds.rules[i], i
+	for _, r := range ds.rules {
+		idx += 1
+		if idx < start_search_idx {
+			continue
+		}
+		if ok, _ := ds.unifier.unifyPredicate(target, r.Result, true); ok {
+			return r, idx
 		}
 	}
+
 	return nil, -1
 }
