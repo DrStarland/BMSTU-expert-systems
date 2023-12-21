@@ -1,5 +1,7 @@
 package types
 
+import "strings"
+
 type Runestring []rune
 
 func (runeword Runestring) String() string {
@@ -29,4 +31,17 @@ func (runeword Runestring) Split(sep rune) []Runestring {
 	}
 
 	return result
+}
+
+func CleansedRunestrings(facts Runestring) []Runestring {
+	facts_result := make([]Runestring, 0)
+	t1 := facts.Split('\n')
+	for _, str := range t1 {
+		if len(str) > 0 {
+			if _hm := Runestring(strings.TrimSpace(string(str))); len(_hm) > 0 {
+				facts_result = append(facts_result, _hm)
+			}
+		}
+	}
+	return facts_result
 }
