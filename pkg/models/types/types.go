@@ -45,3 +45,5 @@ func CleansedRunestrings(facts Runestring) []Runestring {
 	}
 	return facts_result
 }
+
+var Runes = Runestring("ᚠ ᚢ ᚦ ᚫ ᚱ ᚲ ᚷ ᚹ ᚺ ᚾ ᛁ ᛃ ᛇ ᛈ ᛉ ᛋ ᛏ ᛒ ᛖ ᛗ ᛚ ᛝ ᛟ ᛞ ᚸ")

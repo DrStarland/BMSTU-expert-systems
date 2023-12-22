@@ -23,20 +23,23 @@ func NewSearch(formulas []logic.Formula, neg_target logic.Formula) ResolutionSea
 	return rs
 }
 
-func (rs *ResolutionSearch) Solve() {
+func (rs *ResolutionSearch) Prove() {
+	log.Println("Перед началом решения:")
 	rs.print_disjuncts()
 	decisionCanBeFound := true
 	decisionFound := false
 
+	// Основной цикл обхода по базе знаний
 	for decisionCanBeFound && !decisionFound {
-		decisionCanBeFound = false
-
 	iteration:
-		for i1, d1 := range rs.disjuncts {
-			for i2, d2 := range rs.disjuncts {
+		for i, d1 := range rs.disjuncts {
+			for j, d2 := range rs.disjuncts {
 				if d1 != d2 {
-					decisionCanBeFound, decisionFound = rs.findOppositePair(rs.disjuncts[i1], rs.disjuncts[i2])
+					// если дизъюнксты не равны, то смотрить, есть ли в них контрарные пары
+					decisionCanBeFound, decisionFound = rs.findOppositePair(rs.disjuncts[i], rs.disjuncts[j])
 					if decisionCanBeFound {
+						// если пара нашлась, то надо начинать итерации сначала
+						// (кроме того, решение уже могло быть найдено)
 						break iteration
 					}
 				}
@@ -52,13 +55,13 @@ func (rs *ResolutionSearch) Solve() {
 	}
 }
 
-// Проверка пары дизъюнктов на наличие контрарной пары, и возможная унификация
+// Проверка пары дизъюнктов на наличие контрарной пары и возможная унификация
 func (rs *ResolutionSearch) findOppositePair(d1, d2 *logic.Disjunct) (decisionCanBeFound, decisionFound bool) {
 	for i := 0; i < len(d1.Predicates); i++ {
 		for j := 0; j < len(d2.Predicates); j++ {
 			pred1 := d1.Predicates[i]
 			pred2 := d2.Predicates[j]
-			if !(pred1.Name == pred2.Name && pred1.Negative != pred2.Negative) {
+			if pred1.Name != pred2.Name || pred1.Negative == pred2.Negative {
 				continue
 			}
 			if rs.new_disjunct_present(d1, i) && rs.new_disjunct_present(d2, j) {
@@ -66,13 +69,10 @@ func (rs *ResolutionSearch) findOppositePair(d1, d2 *logic.Disjunct) (decisionCa
 			}
 
 			log.Printf("Унификация: %s и %s", pred1.String(), pred2.String())
-			unified := rs.Unify(pred1, pred2)
-			if !unified {
-				log.Println(" невозможна")
+			if !rs.Unify(pred1, pred2) {
+				log.Println(" не удалась")
 				continue
 			}
-
-			log.Println()
 
 			log.Println("Новые:")
 			if rs.add_new_disjunct(d1, i) || rs.add_new_disjunct(d2, j) {
@@ -84,19 +84,19 @@ func (rs *ResolutionSearch) findOppositePair(d1, d2 *logic.Disjunct) (decisionCa
 	return false, false
 }
 
-// Заменить все вхождения переменной old_v на переменную или константу nev_v
-func (rs *ResolutionSearch) substitute(old_v, new_v string, make_const bool) {
+// Заменить все вхождения переменной old_vari на переменную или константу nev_v
+func (rs *ResolutionSearch) substitute(old_vari, new_vari string, make_const bool) {
 	_const := ""
 	if make_const {
 		_const = " const"
 	}
-	log.Println("  Замена: " + old_v + " -> " + new_v + _const)
+	log.Println("  Замена: " + old_vari + " -> " + new_vari + _const)
 
 	for i := range rs.disjuncts {
 		for j := range rs.disjuncts[i].Predicates {
 			for k, vari := range rs.disjuncts[i].Predicates[j].Args {
-				if vari.Name == old_v {
-					vari.Name, vari.Const = new_v, make_const
+				if vari.Name == old_vari {
+					vari.Name, vari.Const = new_vari, make_const
 					rs.disjuncts[i].Predicates[j].Args[k] = vari
 				}
 			}
@@ -104,12 +104,12 @@ func (rs *ResolutionSearch) substitute(old_v, new_v string, make_const bool) {
 	}
 }
 
-// Сформировать дизъюнк из base путём исключения атома с индексом out_idx
-func (rs *ResolutionSearch) get_new_disjunct(base *logic.Disjunct, out_idx int) (logic.Disjunct, bool) {
-	new_disjunct := logic.NewDisjunct(make([]*logic.Predicate, 0, len(base.Predicates)-1))
-	for j := 0; j < len(base.Predicates); j++ {
+// Сформировать новый дизъюнкт путём исключения предиката по индексу
+func (rs *ResolutionSearch) get_new_disjunct(old *logic.Disjunct, out_idx int) (logic.Disjunct, bool) {
+	new_disjunct := logic.NewDisjunct(make([]*logic.Predicate, 0, len(old.Predicates)-1))
+	for j := 0; j < len(old.Predicates); j++ {
 		if j != out_idx {
-			new_disjunct.Predicates = append(new_disjunct.Predicates, base.Predicates[j])
+			new_disjunct.Predicates = append(new_disjunct.Predicates, old.Predicates[j])
 		}
 	}
 
@@ -125,14 +125,14 @@ func (rs *ResolutionSearch) get_new_disjunct(base *logic.Disjunct, out_idx int) 
 }
 
 // Есть ли заданный дизъюнкт в списке
-func (rs *ResolutionSearch) new_disjunct_present(base *logic.Disjunct, out_idx int) bool {
-	_, flag := rs.get_new_disjunct(base, out_idx)
+func (rs *ResolutionSearch) new_disjunct_present(old *logic.Disjunct, out_idx int) bool {
+	_, flag := rs.get_new_disjunct(old, out_idx)
 	return flag
 }
 
 // Добавить дизъюнкт в список
-func (rs *ResolutionSearch) add_new_disjunct(base *logic.Disjunct, out_idx int) (decisionFound bool) {
-	disj, present := rs.get_new_disjunct(base, out_idx)
+func (rs *ResolutionSearch) add_new_disjunct(old *logic.Disjunct, out_idx int) (decisionFound bool) {
+	disj, present := rs.get_new_disjunct(old, out_idx)
 	if present {
 		return false
 	}
@@ -144,7 +144,7 @@ func (rs *ResolutionSearch) add_new_disjunct(base *logic.Disjunct, out_idx int) 
 	return len(disj.Predicates) == 0
 }
 
-// Попытаться унифицировать 2 атома, возвращает true, если унифицировано
+// попытка унификации 2 предикатов
 func (rs *ResolutionSearch) Unify(a1, a2 *logic.Predicate) bool {
 	type pair struct {
 		first  string
@@ -212,9 +212,9 @@ func (rs *ResolutionSearch) Unify(a1, a2 *logic.Predicate) bool {
 	// Применение связанных переменных к списку замен констант
 	for vari, num := range new_vars {
 		for i, para := range consts_mappings {
-			old_v, _ := para.first, para.second
-			if old_v == vari {
-				consts_mappings[i].first = fmt.Sprintf("@%d", num)
+			old_vari, _ := para.first, para.second
+			if old_vari == vari {
+				consts_mappings[i].first = fmt.Sprintf("&%d", num)
 			}
 		}
 	}
@@ -222,24 +222,24 @@ func (rs *ResolutionSearch) Unify(a1, a2 *logic.Predicate) bool {
 	// Проверка замен констант на возможность унификации (нет двух разных замен одной переменной)
 	vars_vals := map[string]string{}
 	for _, para := range consts_mappings {
-		old_v, new_v := para.first, para.second
-		if v, ok := vars_vals[old_v]; ok {
-			if v != new_v {
+		old_vari, new_vari := para.first, para.second
+		if v, ok := vars_vals[old_vari]; ok {
+			if v != new_vari {
 				return false
 			}
 		} else {
-			vars_vals[old_v] = new_v
+			vars_vals[old_vari] = new_vari
 		}
 	}
 
 	// Замена связанных переменных
 	for vari, num := range new_vars {
-		new_name := fmt.Sprintf("@%d", num)
+		new_name := fmt.Sprintf("&%d", num)
 		rs.substitute(vari, new_name, false)
 	}
 	// Замена констант
-	for old_v, new_v := range vars_vals {
-		rs.substitute(old_v, new_v, true)
+	for old_vari, new_vari := range vars_vals {
+		rs.substitute(old_vari, new_vari, true)
 	}
 
 	return true
@@ -251,5 +251,5 @@ func (rs *ResolutionSearch) print_disjuncts() {
 		log.Printf("  %s\n", d)
 	}
 
-	log.Println("=======================================")
+	log.Println("--------------------")
 }

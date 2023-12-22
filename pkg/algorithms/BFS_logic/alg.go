@@ -63,6 +63,7 @@ func (ls *LogicSearch) init(facts []logic.Predicate) {
 func (ls *LogicSearch) Prove(facts []logic.Predicate, targetRule int) bool {
 	ls.init(facts)
 
+	// основной цикл по базе данных
 	var decisionCanBeFound = true
 	for decisionCanBeFound && !ls.closedRules.Contains(targetRule) {
 		oldSize := len(ls.closedFacts)
@@ -71,8 +72,7 @@ func (ls *LogicSearch) Prove(facts []logic.Predicate, targetRule int) bool {
 	}
 
 	log.Println("___________________________________________")
-	log.Println(len(ls.closedRules.list), ls.closedRules.list)
-	log.Println("Facts", ls.closedFacts)
+	log.Println("Доказанные факты:", ls.closedFacts)
 
 	return ls.closedRules.Contains(targetRule)
 }
@@ -80,7 +80,7 @@ func (ls *LogicSearch) Prove(facts []logic.Predicate, targetRule int) bool {
 func (ls *LogicSearch) findRules() {
 	for k, rule := range ls.Rules {
 		if !rule.Proved {
-			log.Printf("*** Рассматриваем правило %v\n", rule)
+			log.Printf("Рассматриваем правило %v\n", rule)
 			for i, pred := range rule.Inputs {
 				if !pred.Proved {
 					for j, it := range ls.closedFacts {
@@ -203,7 +203,7 @@ func (ls *LogicSearch) Unify(a1, a2 *logic.Predicate) bool {
 		for i, para := range constsmap_pings {
 			old_v, _ := para.first, para.second
 			if old_v == vari {
-				constsmap_pings[i].first = fmt.Sprintf("@%d", num)
+				constsmap_pings[i].first = fmt.Sprintf("&%d", num)
 			}
 		}
 	}
@@ -223,7 +223,7 @@ func (ls *LogicSearch) Unify(a1, a2 *logic.Predicate) bool {
 
 	// Замена связанных переменных
 	for vari, num := range new_vars {
-		new_name := fmt.Sprintf("@%d", num)
+		new_name := fmt.Sprintf("&%d", num)
 		ls.substitute(vari, new_name, false)
 	}
 	// Замена констант
