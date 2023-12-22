@@ -58,12 +58,12 @@ func (p1 Predicate) EqualTo(p2 *Predicate) bool {
 }
 
 func (pred Predicate) String() string {
-	res := ""
+	s := ""
 	if pred.Negative {
-		res += "!"
+		s += "!"
 	}
 
-	res += pred.Name + "("
+	res := pred.Name + "("
 	first := true
 	for _, v := range pred.Args {
 		if !first {
@@ -72,7 +72,7 @@ func (pred Predicate) String() string {
 		res += v.String()
 		first = false
 	}
-	return res + ")"
+	return s + "`" + res + ")`"
 }
 
 type Disjunct struct {

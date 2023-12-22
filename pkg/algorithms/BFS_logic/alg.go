@@ -62,22 +62,20 @@ func (ls *LogicSearch) init(facts []logic.Predicate) {
 
 func (ls *LogicSearch) Prove(facts []logic.Predicate, targetRule int) bool {
 	ls.init(facts)
-
 	// основной цикл по базе данных
-	var decisionCanBeFound = true
-	for decisionCanBeFound && !ls.closedRules.Contains(targetRule) {
+	decisionCanBeFound := true
+	decisionFound := false
+	for decisionCanBeFound && !decisionFound {
 		oldSize := len(ls.closedFacts)
-		ls.findRules()
+		decisionFound = ls.findRules(targetRule)
 		decisionCanBeFound = len(ls.closedFacts) != oldSize
 	}
 
-	log.Println("___________________________________________")
 	log.Println("Доказанные факты:", ls.closedFacts)
-
-	return ls.closedRules.Contains(targetRule)
+	return decisionFound
 }
 
-func (ls *LogicSearch) findRules() {
+func (ls *LogicSearch) findRules(targetRule int) bool {
 	for k, rule := range ls.Rules {
 		if !rule.Proved {
 			log.Printf("Рассматриваем правило %v\n", rule)
@@ -92,7 +90,7 @@ func (ls *LogicSearch) findRules() {
 						}
 					}
 				} else {
-					log.Printf("Атом `%v` правила %v уже доказан\n", pred, rule.Id)
+					log.Printf("Предикат `%v` правила %v уже доказан\n", pred, rule.Id)
 				}
 			}
 
@@ -113,7 +111,7 @@ func (ls *LogicSearch) findRules() {
 					ls.Rules[k].Result.Args[j].Name = new_name
 				}
 				ls.Rules[k].Proved = true
-				log.Printf("Добавляем атом `%v`", rule.Result)
+				log.Printf("Добавляем предикат `%v`", rule.Result)
 				ls.closedRules.Add(rule.Id)
 				ls.closedFacts = append(ls.closedFacts, rule.Result)
 			}
@@ -121,7 +119,8 @@ func (ls *LogicSearch) findRules() {
 	}
 	log.Println()
 	log.Println("В результате итерации список закрытых фактов: ", ls.closedFacts)
-	log.Println("=====================")
+	log.Println("---------------------")
+	return !ls.closedRules.Contains(targetRule)
 }
 
 // Проверяет, хватает ли имеющихся фактов, чтобы доказать правило
@@ -144,7 +143,6 @@ func (ls *LogicSearch) Unify(a1, a2 *logic.Predicate) bool {
 
 	if a1.Name != a2.Name {
 		return false
-		//log.Panic(a1.Name, a2.Name)
 	}
 
 	// Предварительные списки замен

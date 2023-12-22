@@ -35,7 +35,7 @@ func (rs *ResolutionSearch) Prove() {
 		for i, d1 := range rs.disjuncts {
 			for j, d2 := range rs.disjuncts {
 				if d1 != d2 {
-					// если дизъюнксты не равны, то смотрить, есть ли в них контрарные пары
+					// если дизъюнкты не равны, то смотрить, есть ли в них контрарные пары
 					decisionCanBeFound, decisionFound = rs.findOppositePair(rs.disjuncts[i], rs.disjuncts[j])
 					if decisionCanBeFound {
 						// если пара нашлась, то надо начинать итерации сначала
@@ -184,7 +184,6 @@ func (rs *ResolutionSearch) Unify(a1, a2 *logic.Predicate) bool {
 
 	// Объединение связанных переменных
 	counter := 1
-
 	new_vars := make(map[string]int, 0)
 	for _, tuple := range linked_vars {
 		var1, var2 := tuple.first, tuple.second
